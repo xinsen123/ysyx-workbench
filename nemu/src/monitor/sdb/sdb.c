@@ -56,6 +56,10 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args){
+  if(args == NULL){
+    printf("error");
+    return 0;
+  }
   int num = atoi(strtok(NULL," "));
   cpu_exec(num > 0 ? num : 1);
   return 0;
