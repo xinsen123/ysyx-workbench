@@ -57,7 +57,7 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args){
   if(args == NULL){
-    printf("too few arguments to execute\n");
+    printf("Too few arguments to execute\n");
     return 0;
   }
   int num = atoi(strtok(NULL," "));
