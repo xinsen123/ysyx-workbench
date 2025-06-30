@@ -56,7 +56,7 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args){
-  if(args == NULL){
+  if (args == NULL){
     printf("Too few arguments to execute\n");
     return 0;
   }
@@ -66,7 +66,10 @@ static int cmd_si(char *args){
 };
 
 static int cmd_info(char *args){
-  isa_reg_display();
+  char *arg1 = strtok(NULL," ");
+  if (!strcmp(arg1,"r")){
+    isa_reg_display();
+  }
   return 0;
 };
 
