@@ -42,6 +42,14 @@ static char* rl_gets() {
   return line_read;
 }
 
+static int is_args_null(char *args){
+  if (args == NULL){
+    printf("too few arguments to execute\n");
+    return 1;
+  }
+  return 0;
+}
+
 static int cmd_c(char *args) {
   cpu_exec(-1);
   return 0;
@@ -56,10 +64,7 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args){
-  if (args == NULL){
-    printf("Too few arguments to execute\n");
-    return 0;
-  }
+  if(is_args_null(args)) return 0;
   int num = atoi(strtok(NULL," "));
   cpu_exec(num > 0 ? num : 1);
   return 0;
@@ -67,7 +72,7 @@ static int cmd_si(char *args){
 
 static int cmd_info(char *args){
   char *arg1 = strtok(NULL," ");
-  if (!strcmp(arg1,"r")){
+  if (strcmp(arg1,"r") == 0){
     isa_reg_display();
   }
   return 0;
@@ -87,7 +92,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "si [N] -> execute the program N steps", cmd_si },
   { "info", "display information. r -> register, w -> monitor", cmd_info },
-  { "x", "x N M -> output M bytes information from N in memory", cmd_x },
+  { "x", "x N M -> output N bytes information from M in memory", cmd_x },
   /* TODO: Add more commands */
 
 };
