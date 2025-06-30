@@ -27,7 +27,7 @@ void isa_reg_display() {
   int reglen = ARRLEN(regs);
   int i=0;
   for(;i<reglen;i++){
-    printf("%s:%x, ",regs[i],*regs[i]);
+    printf("%s:%x, ",regs[i],(unsigned int)*regs[i]);
     if(i%8 == 7){
       printf("\n");
     }
