@@ -83,7 +83,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "si [N] -> execute the program N steps", cmd_si },
-  { "info", "display information. r -> register", cmd_info },
+  { "info", "display information. r -> register, w -> monitor", cmd_info },
   { "x", "x N M -> output M bytes information from N in memory", cmd_x },
   /* TODO: Add more commands */
 
