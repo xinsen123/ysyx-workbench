@@ -82,7 +82,7 @@ static int cmd_info(char *args){
 };
 
 static int cmd_x(char *args){
-  word_t word = vaddr_read(0,0);
+  word_t word = vaddr_read(0x80000000,1);
   printf("%d",word);
   return 0;
 };
