@@ -82,7 +82,11 @@ static int cmd_info(char *args){
 };
 
 static int cmd_x(char *args){
-  word_t word = vaddr_read(0x80000000,1);
+  char *arg_len = strtok(NULL, " ");
+  char *arg_addr = strtok(NULL, " ");
+  int len = (int) *arg_len;
+  vaddr_t addr = (vaddr_t) *arg_addr;
+  word_t word = vaddr_read(addr,len);
   printf("%d",word);
   return 0;
 };
