@@ -74,7 +74,7 @@ static int cmd_si(char *args){
 
 static int cmd_info(char *args){
   char *arg1 = strtok(NULL," ");
-  if(is_args_null(args)) return 0;
+  if (is_args_null(args)) return 0;
   if (strcmp(arg1,"r") == 0){
     isa_reg_display();
   }
@@ -83,12 +83,17 @@ static int cmd_info(char *args){
 
 static int cmd_x(char *args){
   char *arg_len = strtok(NULL, " ");
+  if (is_args_null(arg_len)) return 0;
   char *arg_addr = strtok(NULL, " ");
+  if (is_args_null(arg_addr)) return 0;
   int len = strtol(arg_len, NULL, 10);;
   vaddr_t addr = strtol(arg_addr, NULL, 16);
-  printf("%d, %x\n",len,addr);
+  if (addr <= 0x80000000 || addr >=0x87ffffff){
+    printf("address is out of memory!");
+    return 0;
+  };
   word_t word = vaddr_read(addr, len);
-  printf("%d",word);
+  printf("%#x",word);
   return 0;
 };
 
