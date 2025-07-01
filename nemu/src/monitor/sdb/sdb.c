@@ -89,11 +89,13 @@ static int cmd_x(char *args){
   int len = strtol(arg_len, NULL, 10);;
   vaddr_t addr = strtol(arg_addr, NULL, 16);
   if (addr < 0x80000000 || addr > 0x87ffffff){
-    printf("address is out of memory!");
+    printf("address is out of memory!\n");
     return 0;
   };
-  word_t word = vaddr_read(addr, len);
-  printf("%#x",word);
+  for(int i = 0; i < len; i++){
+    word_t word = vaddr_read(addr, i);
+    printf("%#x ",word);
+  }
   return 0;
 };
 
