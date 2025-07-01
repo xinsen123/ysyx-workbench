@@ -86,7 +86,7 @@ static int cmd_x(char *args){
   char *arg_addr = strtok(NULL, " ");
   int len = strtol(arg_len, NULL, 10);;
   vaddr_t addr = strtol(arg_addr, NULL, 16);
-  printf("%d,%d",len,addr);
+  printf("%d,%x",len,addr);
   // word_t word = vaddr_read(addr, len);
   // printf("%d",word);
   return 0;
