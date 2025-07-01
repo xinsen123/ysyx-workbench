@@ -19,6 +19,8 @@
 #include <readline/history.h>
 #include "sdb.h"
 
+#include <memory/vaddr.h>
+
 static int is_batch_mode = false;
 
 void init_regex();
@@ -80,6 +82,8 @@ static int cmd_info(char *args){
 };
 
 static int cmd_x(char *args){
+  word_t word = vaddr_read(0,0);
+  printf("%d",word);
   return 0;
 };
 
