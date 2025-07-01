@@ -88,7 +88,7 @@ static int cmd_x(char *args){
   if (is_args_null(arg_addr)) return 0;
   int len = strtol(arg_len, NULL, 10);;
   vaddr_t addr = strtol(arg_addr, NULL, 16);
-  if (addr <= 0x80000000 || addr >=0x87ffffff){
+  if (addr < 0x80000000 || addr > 0x87ffffff){
     printf("address is out of memory!");
     return 0;
   };
