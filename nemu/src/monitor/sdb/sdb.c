@@ -82,12 +82,17 @@ static int cmd_info(char *args){
 };
 
 static int cmd_x(char *args){
+  int len = 0;
+  word_t addr = 0;
   char *arg_len = strtok(NULL, " ");
   if (is_args_null(arg_len)) return 0;
   char *arg_addr = strtok(NULL, " ");
-  if (is_args_null(arg_addr)) return 0;
-  int len = strtol(arg_len, NULL, 10);;
-  vaddr_t addr = strtol(arg_addr, NULL, 16);
+  if (!is_args_null(arg_addr)){
+    addr = strtol(arg_addr, NULL, 16);
+  } else{
+    addr = 0x80000000;
+  }
+  len = strtol(arg_len, NULL, 10);
   if (addr < 0x80000000 || addr > 0x87ffffff){
     printf("address is out of memory!\n");
     return 0;
