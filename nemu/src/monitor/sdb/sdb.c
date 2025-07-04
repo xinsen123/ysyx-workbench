@@ -87,7 +87,7 @@ static int cmd_x(char *args){
   char *arg_len = strtok(NULL, " ");
   if (is_args_null(arg_len)) return 0;
   char *arg_addr = strtok(NULL, " ");
-  if (!is_args_null(arg_addr)){
+  if (arg_addr != NULL){
     addr = strtol(arg_addr, NULL, 16);
   } else{
     addr = 0x80000000;
