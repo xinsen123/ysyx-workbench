@@ -91,7 +91,7 @@ static int cmd_x(char *args){
     addr = strtol(arg_addr, NULL, 16);
   } else{
     addr = 0x80000000;
-  }
+  }//addr = defulat number if args == NULL
   len = strtol(arg_len, NULL, 10);
   if (addr < 0x80000000 || addr > 0x87ffffff){
     printf("address is out of memory!\n");
