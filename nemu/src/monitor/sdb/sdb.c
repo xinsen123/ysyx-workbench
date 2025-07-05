@@ -19,7 +19,11 @@
 #include <readline/history.h>
 #include "sdb.h"
 
+#include <memory/vaddr.h>
+
 static int is_batch_mode = false;
+static int MEM_BEGIN = 0x80000000;
+static int MEM_END = 0x87ffffff;
 
 void init_regex();
 void init_wp_pool();
@@ -42,6 +46,14 @@ static char* rl_gets() {
   return line_read;
 }
 
+static int is_args_null(char *args){
+  if (args == NULL){
+    printf("too few arguments to execute\n");
+    return 1;
+  }
+  return 0;
+}
+
 static int cmd_c(char *args) {
   cpu_exec(-1);
   return 0;
@@ -55,6 +67,49 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args){
+  if(is_args_null(args)) return 0;
+  int num = atoi(strtok(NULL," "));
+  cpu_exec(num > 0 ? num : 1);
+  return 0;
+};
+
+static int cmd_info(char *args){
+  char *arg1 = strtok(NULL," ");
+  if (is_args_null(args)) return 0;
+  if (strcmp(arg1,"r") == 0){
+    isa_reg_display();
+  }
+  return 0;
+};
+
+static int cmd_x(char *args){
+  int len = 0;
+  word_t addr = 0;
+  char *arg_len = strtok(NULL, " ");
+  if (is_args_null(arg_len)) return 0;
+  char *arg_addr = strtok(NULL, " ");
+  if (arg_addr != NULL){
+    addr = strtol(arg_addr, NULL, 16);
+  } else{
+    addr = MEM_BEGIN;
+  }//addr = defulat number if args == NULL
+  len = strtol(arg_len, NULL, 10);
+  if (addr < MEM_BEGIN || addr > MEM_END){
+    printf("address is out of memory!\n");
+    return 0;
+  };
+  word_t addr_end = addr + len;
+  for(; addr < addr_end; addr++){
+    if(addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
+    if(addr % 4 == 0) printf("%#010x: ",addr);
+    word_t word = vaddr_read(addr, 1);
+    printf("%02x ",word);
+  }
+  printf("\n");
+  return 0;
+};
+
 static struct {
   const char *name;
   const char *description;
@@ -63,7 +118,9 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "si [N] -> execute the program N steps", cmd_si },
+  { "info", "display information. r -> register, w -> monitor", cmd_info },
+  { "x", "x N M -> output N bytes information from M in memory", cmd_x },
   /* TODO: Add more commands */
 
 };
