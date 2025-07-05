@@ -97,10 +97,12 @@ static int cmd_x(char *args){
     printf("address is out of memory!\n");
     return 0;
   };
-  for(int i = 1; i <= len; i++){
+  for(int i = 0; i < len; i++){
     word_t word = vaddr_read(addr + i, 1);
     printf("%#x ",word);
+    if(i % 8 == 7) printf("\n");
   }
+  printf("\n");
   return 0;
 };
 
