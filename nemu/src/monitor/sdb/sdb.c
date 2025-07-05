@@ -100,7 +100,7 @@ static int cmd_x(char *args){
   for(int i = 0; i < len; i++){
     if(i % 8 == 0) printf("\n");
     word_t word = vaddr_read(addr + i, 1);
-    printf("%#010x ",word);  
+    printf("%#06x ",word);  
   }
   printf("\n");
   return 0;
