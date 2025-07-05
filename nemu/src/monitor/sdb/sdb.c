@@ -98,9 +98,9 @@ static int cmd_x(char *args){
     return 0;
   };
   for(int i = 0; i < len; i++){
+    if(i % 8 == 0) printf("\n");
     word_t word = vaddr_read(addr + i, 1);
-    printf("%#x ",word);
-    if(i % 8 == 7) printf("\n");
+    printf("%#x ",word);  
   }
   printf("\n");
   return 0;
