@@ -22,6 +22,8 @@
 #include <memory/vaddr.h>
 
 static int is_batch_mode = false;
+static int MEM_BEGIN = 0x80000000;
+static int MEM_END = 0x87ffffff;
 
 void init_regex();
 void init_wp_pool();
@@ -90,17 +92,18 @@ static int cmd_x(char *args){
   if (arg_addr != NULL){
     addr = strtol(arg_addr, NULL, 16);
   } else{
-    addr = 0x80000000;
+    addr = MEM_BEGIN;
   }//addr = defulat number if args == NULL
   len = strtol(arg_len, NULL, 10);
-  if (addr < 0x80000000 || addr > 0x87ffffff){
+  if (addr < MEM_BEGIN || addr > MEM_END){
     printf("address is out of memory!\n");
     return 0;
   };
-  for(int i = 0; i < len; i++){
-    if(i % 4 == 0) printf("%010x:   ",addr);
-    if(i % 4 == 0 && i) printf("\n");
-    word_t word = vaddr_read(addr + i, 1);
+  word_t addr_end = addr + len;
+  for(; addr < addr_end; addr++){
+    if(addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
+    if(addr % 4 == 0) printf("%010x:   ",addr);
+    word_t word = vaddr_read(addr, 1);
     printf("%#04x ",word);
   }
   printf("\n");
