@@ -18,10 +18,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-#include "debug.h"
 
 #include <memory/vaddr.h>
-#include <stdio.h>
 
 static int is_batch_mode = false;
 static int MEM_BEGIN = 0x80000000;
@@ -70,7 +68,7 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args){
-  Assert(is_args_null(args), "Too few arguments");
+  if(is_args_null(args)) return 0;
   int num = atoi(strtok(NULL," "));
   cpu_exec(num > 0 ? num : 1);
   return 0;
