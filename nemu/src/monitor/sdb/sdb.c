@@ -115,12 +115,13 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
-  { "si", "si [N] -> execute the program N steps", cmd_si },
-  { "info", "display information. r -> register, w -> monitor", cmd_info },
-  { "x", "x N M -> output N bytes information from M in memory", cmd_x },
+  { "help",   "Display information about all supported commands",     cmd_help },
+  { "c",      "Continue the execution of the program",                cmd_c },
+  { "q",      "Exit NEMU",                                            cmd_q },
+  { "si",     "si [N] -> Execute the program N steps",                cmd_si },
+  { "info",   "Display information. r -> register, w -> monitor",     cmd_info },
+  { "x",      "x N M -> Output N bytes information from M in memory", cmd_x },
+  { "expr",   "Evaluate "}
   /* TODO: Add more commands */
 
 };
