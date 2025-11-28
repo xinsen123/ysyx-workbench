@@ -21,6 +21,7 @@
 #include "debug.h"
 
 #include <memory/vaddr.h>
+#include <stdio.h>
 
 static int is_batch_mode = false;
 static int MEM_BEGIN = 0x80000000;
@@ -49,7 +50,7 @@ static char* rl_gets() {
 
 static int is_args_null(char *args){
   if (args == NULL){
-    Log("too few arguments to execute\n");
+    printf("too few arguments to execute\n");
     return 1;
   }
   return 0;
