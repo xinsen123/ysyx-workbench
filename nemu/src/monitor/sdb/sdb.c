@@ -110,6 +110,10 @@ static int cmd_x(char *args){
   return 0;
 };
 
+static int cmd_expr(){
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -121,7 +125,7 @@ static struct {
   { "si",     "si [N] -> Execute the program N steps",                cmd_si },
   { "info",   "Display information. r -> register, w -> monitor",     cmd_info },
   { "x",      "x N M -> Output N bytes information from M in memory", cmd_x },
-  { "expr",   "Evaluate "}
+  { "expr",   "Evaluate the expr\'s number",                          cmd_expr},
   /* TODO: Add more commands */
 
 };
