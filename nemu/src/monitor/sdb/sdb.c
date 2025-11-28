@@ -48,7 +48,7 @@ static char* rl_gets() {
 
 static int is_args_null(char *args){
   if (args == NULL){
-    printf("too few arguments to execute\n");
+    Log("too few arguments to execute\n");
     return 1;
   }
   return 0;
