@@ -110,17 +110,22 @@ static int cmd_x(char *args){
   return 0;
 };
 
+static int cmd_expr(){
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
-  { "si", "si [N] -> execute the program N steps", cmd_si },
-  { "info", "display information. r -> register, w -> monitor", cmd_info },
-  { "x", "x N M -> output N bytes information from M in memory", cmd_x },
+  { "help",   "Display information about all supported commands",     cmd_help },
+  { "c",      "Continue the execution of the program",                cmd_c },
+  { "q",      "Exit NEMU",                                            cmd_q },
+  { "si",     "si [N] -> Execute the program N steps",                cmd_si },
+  { "info",   "Display information. r -> register, w -> monitor",     cmd_info },
+  { "x",      "x N M -> Output N bytes information from M in memory", cmd_x },
+  { "expr",   "Evaluate the expr\'s number",                          cmd_expr},
   /* TODO: Add more commands */
 
 };
@@ -135,13 +140,13 @@ static int cmd_help(char *args) {
   if (arg == NULL) {
     /* no argument given */
     for (i = 0; i < NR_CMD; i ++) {
-      printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
+      printf("%-4s - %s\n", cmd_table[i].name, cmd_table[i].description);
     }
   }
   else {
     for (i = 0; i < NR_CMD; i ++) {
       if (strcmp(arg, cmd_table[i].name) == 0) {
-        printf("%s - %s\n", cmd_table[i].name, cmd_table[i].description);
+        printf("%-4s - %s\n", cmd_table[i].name, cmd_table[i].description);
         return 0;
       }
     }
