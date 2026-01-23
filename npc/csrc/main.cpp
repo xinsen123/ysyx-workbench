@@ -28,7 +28,7 @@ int main() {
     tfp->open("wave.fsp");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
-    while (1) {
+    while (!contextp->gotFinish()) {
         if (time(NULL) - last) {
             last = time(NULL);
             int a = rand() & 1;
