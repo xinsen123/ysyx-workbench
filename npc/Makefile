@@ -4,13 +4,14 @@ OBJDIR = obj_dir
 PREFIX = Vtop
 TARGET = $(OBJDIR)/$(PREFIX)
 VERILATOR = verilator
+TRACE = 
 
 .PHONY: all clean sim
 
 all: $(TARGET)
 
 $(TARGET): $(VSRC) $(CSRC) | $(OBJDIR)
-	$(VERILATOR) --cc $(VSRC) --exe $(CSRC)
+	$(VERILATOR) --cc $(TRACE) $(VSRC) --exe $(CSRC)
 	$(MAKE) -C $(OBJDIR) -f $(PREFIX).mk $(PREFIX)
 
 $(OBJDIR):
