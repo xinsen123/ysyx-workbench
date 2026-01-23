@@ -6,9 +6,11 @@
 #include <time.h>
 
 #include "../obj_dir/Vtop.h"
+#include "../auto_bind.cpp"
 #include "verilated.h"
+#include <nvboard.h>
 
-#define CONFIG_FST_WAVE_TRACE 1
+#define CONFIG_FST_WAVE_TRACE 0
 
 VerilatedContext *contextp = new VerilatedContext; // 用于保存仿真的时间
 
@@ -29,7 +31,11 @@ int main() {
     tfp->open("wave.fst");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
-    while (begin > time(NULL)) {
+
+    void nvboard_bind_all_pins(Vtop* top);
+    nvboard_init();
+    
+    while (1) {
         if (time(NULL) - last) {
             last = time(NULL);
             int a = rand() & 1;
