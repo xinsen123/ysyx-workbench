@@ -48,11 +48,15 @@ int main() {
 
             contextp->timeInc(1); //推动仿真时间
 
+            nvboard_update();
+
 #if CONFIG_FST_WAVE_TRACE
             tfp->dump(contextp->time()); // 按照时间采样
 #endif
         }
     }
+
+    nvboard_quit();
 
 #if CONFIG_FST_WAVE_TRACE
     tfp->close(); // 关闭波形文件
