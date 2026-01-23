@@ -23,8 +23,7 @@ int main() {
 #if CONFIG_FST_WAVE_TRACE
     contextp->traceEverOn(true); // 启用跟踪
     top->trace(tfp, 99);         // 采样深度为99
-    tfp->open(
-        "../wave.fsp"); // 打开波形文件，文件地址和文件名可以自定义
+    tfp->open("../wave.fsp");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
     while (1) {
@@ -37,6 +36,9 @@ int main() {
             top->eval();
             printf("a = %d, b = %d, f = %d\n", a, b, top->f);
             assert(top->f == (a ^ b));
+#if CONFIG_FST_WAVE_TRACE
+            tfp->dump(contextp->time()); // 按照时间采样
+#endif
         }
     }
 }
