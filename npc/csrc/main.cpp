@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "obj_dir/Vtop.h"
+#include "../obj_dir/Vtop.h"
 
 int main() {
     Vtop *top = new Vtop;

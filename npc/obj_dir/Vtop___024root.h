@@ -13,6 +13,15 @@ class Vtop__Syms;
 class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final {
   public:
 
+    // DESIGN SPECIFIC STATE
+    VL_IN8(a,0,0);
+    VL_IN8(b,0,0);
+    VL_OUT8(f,0,0);
+    CData/*0:0*/ __VstlFirstIteration;
+    CData/*0:0*/ __VicoFirstIteration;
+    VlUnpacked<QData/*63:0*/, 1> __VstlTriggered;
+    VlUnpacked<QData/*63:0*/, 1> __VicoTriggered;
+
     // INTERNAL VARIABLES
     Vtop__Syms* vlSymsp;
     const char* vlNamep;
