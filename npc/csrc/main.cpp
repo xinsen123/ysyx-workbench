@@ -28,7 +28,7 @@ int main() {
     tfp->open("wave.fsp");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
-    while (!contextp->gotFinish()) {
+    while (1) {
         if (time(NULL) - last) {
             last = time(NULL);
             int a = rand() & 1;
@@ -38,6 +38,9 @@ int main() {
             top->eval();
             printf("a = %d, b = %d, f = %d\n", a, b, top->f);
             assert(top->f == (a ^ b));
+
+            contextp->timeInc(1); //推动仿真时间
+
 #if CONFIG_FST_WAVE_TRACE
             tfp->dump(contextp->time()); // 按照时间采样
 #endif
