@@ -8,6 +8,8 @@ TRACE =
 
 .PHONY: all clean sim
 
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+
 all: $(TARGET)
 
 $(TARGET): $(VSRC) $(CSRC) | $(OBJDIR)
