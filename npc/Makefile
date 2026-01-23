@@ -1,7 +1,7 @@
 CSRC = csrc/main.cpp
 VSRC = $(wildcard vsrc/*.v)
 OBJDIR = obj_dir
-PREFIX = Vexample
+PREFIX = Vtop
 TARGET = $(OBJDIR)/$(PREFIX)
 VERILATOR = verilator
 

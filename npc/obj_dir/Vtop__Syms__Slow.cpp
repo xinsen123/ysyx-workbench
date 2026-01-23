@@ -1,9 +1,9 @@
 // Verilated -*- C++ -*-
 // DESCRIPTION: Verilator output: Symbol table implementation internals
 
-#include "Vexample__pch.h"
+#include "Vtop__pch.h"
 
-Vexample__Syms::Vexample__Syms(VerilatedContext* contextp, const char* namep, Vexample* modelp)
+Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep, Vtop* modelp)
     : VerilatedSyms{contextp}
     // Setup internal state of the Syms class
     , __Vm_modelp{modelp}
@@ -22,7 +22,7 @@ Vexample__Syms::Vexample__Syms(VerilatedContext* contextp, const char* namep, Ve
     // Setup scopes
 }
 
-Vexample__Syms::~Vexample__Syms() {
+Vtop__Syms::~Vtop__Syms() {
     // Tear down scopes
     // Tear down sub module instances
 }
