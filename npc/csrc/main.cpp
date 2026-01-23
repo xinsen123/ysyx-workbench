@@ -21,6 +21,7 @@ int main() {
     Vtop *top = new Vtop;
 
     time_t last = 0;
+    time_t begin = time(NULL) + 10;
 
 #if CONFIG_FST_WAVE_TRACE
     contextp->traceEverOn(true); // 启用跟踪
@@ -28,7 +29,7 @@ int main() {
     tfp->open("wave.fst");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
-    while (1) {
+    while (begin > time(NULL)) {
         if (time(NULL) - last) {
             last = time(NULL);
             int a = rand() & 1;
