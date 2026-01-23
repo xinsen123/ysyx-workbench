@@ -23,7 +23,7 @@ int main() {
 #if CONFIG_FST_WAVE_TRACE
     contextp->traceEverOn(true); // 启用跟踪
     top->trace(tfp, 99);         // 采样深度为99
-    tfp->open("../wave.fsp");    // 打开波形文件，文件地址和文件名可以自定义
+    tfp->open("wave.fsp");    // 打开波形文件，文件地址和文件名可以自定义
 #endif
 
     while (1) {
@@ -41,4 +41,7 @@ int main() {
 #endif
         }
     }
+#if CONFIG_FST_WAVE_TRACE
+    tfp->close(); // 关闭波形文件
+#endif
 }
