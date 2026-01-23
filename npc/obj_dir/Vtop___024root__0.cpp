@@ -53,7 +53,7 @@ void Vtop___024root___eval_ico(Vtop___024root* vlSelf) {
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
     if ((1ULL & vlSelfRef.__VicoTriggered[0U])) {
-        vlSelfRef.f = ((IData)(vlSelfRef.a) ^ (IData)(vlSelfRef.b));
+        Vtop___024root___ico_sequent__TOP__0(vlSelf);
     }
 }
 
