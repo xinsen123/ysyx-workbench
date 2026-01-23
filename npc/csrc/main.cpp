@@ -8,6 +8,8 @@
 #include "../obj_dir/Vtop.h"
 #include "verilated.h"
 
+#define CONFIG_FST_WAVE_TRACE 1
+
 VerilatedContext *contextp = new VerilatedContext; // 用于保存仿真的时间
 
 #if CONFIG_FST_WAVE_TRACE               // 如果--trace 生成波形文件
