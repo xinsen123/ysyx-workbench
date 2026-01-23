@@ -2,8 +2,11 @@ CSRC = csrc/main.cpp
 VSRC = $(wildcard vsrc/*.v)
 OBJDIR = obj_dir
 PREFIX = Vtop
+TOPNAME = top
 TARGET = $(OBJDIR)/$(PREFIX)
 VERILATOR = verilator
+VERILATOR_CFLAGS += -MMD --build -cc  \
+				-O3 --x-assign fast --x-initial fast --noassert
 TRACE = 
 
 .PHONY: all clean sim
