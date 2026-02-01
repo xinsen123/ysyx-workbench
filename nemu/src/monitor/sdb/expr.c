@@ -116,7 +116,9 @@ static bool make_token(char *e) {
                  * to record the token in the array `tokens'. For certain types
                  * of tokens, some extra actions should be performed.
                  */
-
+                
+                memset(tokens[nr_token].str, 0, 32);
+                
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
