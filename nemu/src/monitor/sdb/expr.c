@@ -154,11 +154,11 @@ bool check_parentheses(uint32_t p, uint32_t q) {
         max_num =
             max_num < left_num - right_num ? left_num - right_num : max_num;
     }
-    if (left_num != right_num || max_num != left_num ||
-        (left_num == 0 && right_num == 0)) {
-        return false;
-    } else {
+    if (tokens[p].type == '(' && tokens[q].type == ')' &&
+        left_num == right_num && max_num == left_num) {
         return true;
+    } else {
+        return false;
     }
 }
 
