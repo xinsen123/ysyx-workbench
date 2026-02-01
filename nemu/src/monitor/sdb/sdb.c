@@ -134,8 +134,9 @@ static int cmd_testexpr(char *args) {
     FILE *input = fopen(
         "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
     char buf[4096];
+    int result;
 
-    while (fscanf(input, "%s\n", buf)) {
+    while (fscanf(input, "%d %s\n", &result, buf)) {
         bool success = 0;
         printf("result: %d\n", expr(buf, &success));
     }
