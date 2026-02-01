@@ -89,10 +89,11 @@ static Token tokens[32]
     __attribute__((used)) = {}; //__attribute__ do not clear it even if not used
 static int nr_token __attribute__((used)) = 0;
 
+int ptoken = 0;
+
 static bool make_token(char *e) {
     int position = 0;
     int i;
-    int ptoken = 0;
     regmatch_t pmatch;
 
     nr_token = 0;
@@ -227,6 +228,6 @@ word_t expr(char *e, bool *success) {
     }
 
     /* TODO: Insert codes to evaluate the expression. */
-    eval(0, sizeof(tokens) - 1);
+    eval(0, ptoken - 1);
     return 0;
 }
