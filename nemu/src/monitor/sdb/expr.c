@@ -129,6 +129,8 @@ static bool make_token(char *e) {
 
                 break;
             }
+            while (e[position] == ' ')
+                position++;
         }
 
         if (i == NR_REGEX) {
