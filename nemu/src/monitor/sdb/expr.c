@@ -197,9 +197,9 @@ int eval(uint32_t p, uint32_t q) {
         return eval(p + 1, q - 1);
     } else {
         uint32_t op;
-        op = main_sign(p, q, '+', '-');
+        op = main_sign(p, q, '*', '/');
         if (op == 0)
-            op = main_sign(p, q, '*', '/'); // 后加减先乘除，若有加减则会覆盖
+            op = main_sign(p, q, '+', '-'); // 后加减先乘除，若有加减则会覆盖
         if (op == 0)
             assert(0);
 
