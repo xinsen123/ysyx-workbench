@@ -155,7 +155,7 @@ static struct {
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
-    {"testexpr", "Test the expr runs", cmd_testexpr}
+    {"te", "Test the expr runs", cmd_testexpr}
     /* TODO: Add more commands */
 
 };
