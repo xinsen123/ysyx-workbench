@@ -188,15 +188,8 @@ int eval(uint32_t p, uint32_t q) {
          * For now this token should be a number.
          * Return the value of the number.
          */
+        printf("%d", atoi(tokens[p].str));
         return atoi(tokens[p].str);
-        switch (tokens[p].type) {
-        case TK_DNUM:
-
-        case TK_XNUM:
-            return atoi(tokens[p].str + 2); // 除去前面的0x
-        default:
-            return 0;
-        }
     } else if (check_parentheses(p, q) == true) {
         /* The expression is surrounded by a matched pair of parentheses.
          * If that is the case, just throw away the parentheses.
