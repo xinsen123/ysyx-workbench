@@ -100,7 +100,7 @@ static bool make_token(char *e) {
         /* Try all rules one by one. */
         for (i = 0; i < NR_REGEX; i++) {
 
-            while (e[position] == ' ')
+            while (e[position] == ' ')// remove space
                 position++;
 
             if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 &&
