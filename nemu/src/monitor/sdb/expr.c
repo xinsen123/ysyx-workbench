@@ -100,7 +100,7 @@ static bool make_token(char *e) {
         /* Try all rules one by one. */
         for (i = 0; i < NR_REGEX; i++) {
 
-            while (e[position] == ' ')// remove space
+            while (e[position] == ' ') // remove space
                 position++;
 
             if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 &&
@@ -116,9 +116,9 @@ static bool make_token(char *e) {
                  * to record the token in the array `tokens'. For certain types
                  * of tokens, some extra actions should be performed.
                  */
-                
-                memset(tokens[nr_token].str, 0, 32);// 预防残留
-                
+
+                memset(tokens[nr_token].str, 0, 32); // 预防残留
+
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
@@ -129,6 +129,9 @@ static bool make_token(char *e) {
                     nr_token++;
                 }
                 position += substr_len;
+
+                while (e[position] == ' ') // remove space
+                    position++;
 
                 break;
             }
@@ -232,7 +235,7 @@ word_t expr(char *e, bool *success) {
     }
 
     /* TODO: Insert codes to evaluate the expression. */
-    
+
     printf("nr_token: %d\n", nr_token);
     return eval(0, nr_token - 1);
 }
