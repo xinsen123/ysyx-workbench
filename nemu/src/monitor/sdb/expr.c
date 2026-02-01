@@ -152,7 +152,8 @@ bool check_parentheses(uint32_t p, uint32_t q) {
         max_num =
             max_num < left_num - right_num ? left_num - right_num : max_num;
     }
-    if (left_num - right_num != 0 || max_num != left_num) {
+    if (left_num - right_num != 0 || max_num != left_num ||
+        (left_num == 0 && right_num == 0)) {
         return false;
     } else {
         return true;
@@ -200,7 +201,8 @@ int eval(uint32_t p, uint32_t q) {
         uint32_t op;
         op = main_sign(p, q, '*', '/');
         op = main_sign(p, q, '+', '-'); // 后加减先乘除，若有加减则会覆盖
-        if(op == 0) assert(0);
+        if (op == 0)
+            assert(0);
 
         int val1 = eval(p, op - 1);
         int val2 = eval(op + 1, q);
