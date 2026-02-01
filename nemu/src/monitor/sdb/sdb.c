@@ -21,6 +21,7 @@
 
 #include <memory/vaddr.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -101,13 +102,13 @@ static int cmd_x(char *args) {
     } else {
         addr = MEM_BEGIN;
     } // addr = defulat number if args == NULL
-    
+
     len = strtol(arg_len, NULL, 10);
     if (addr < MEM_BEGIN || addr > MEM_END) {
         printf("address is out of memory!\n");
         return 0;
     };
-    
+
     word_t addr_end = addr + len;
     for (; addr < addr_end; addr++) {
         if (addr % 4 == 0 && addr != MEM_BEGIN)
@@ -117,17 +118,17 @@ static int cmd_x(char *args) {
         word_t word = vaddr_read(addr, 1);
         printf("%02x ", word);
     }
-    
+
     printf("\n");
     return 0;
 };
 
-static int cmd_p(char *args) { 
+static int cmd_p(char *args) {
     char *arg1 = strtok(NULL, " ");
     bool success = 0;
-    
-    expr(arg1, &success);
-    return 0; 
+
+    printf("result: %d\n", expr(arg1, &success));
+    return 0;
 }
 
 static struct {
