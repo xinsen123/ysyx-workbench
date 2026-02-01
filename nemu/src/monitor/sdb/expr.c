@@ -189,9 +189,10 @@ int eval(uint32_t p, uint32_t q) {
          * For now this token should be a number.
          * Return the value of the number.
          */
+        return atoi(tokens[p].str);
         switch (tokens[p].type) {
         case TK_DNUM:
-            return atoi(tokens[p].str);
+
         case TK_XNUM:
             return atoi(tokens[p].str + 2); // 除去前面的0x
         default:
