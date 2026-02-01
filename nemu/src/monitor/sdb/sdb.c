@@ -130,6 +130,18 @@ static int cmd_p(char *args) {
     return 0;
 }
 
+static int cmd_testexpr(char *args) {
+    FILE *input = fopen(
+        "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
+    char buf[4096];
+
+    while (fscanf(input, "%s\n", buf)) {
+        bool success = 0;
+        printf("result: %d\n", expr(buf, &success));
+    }
+    return 0;
+}
+
 static struct {
     const char *name;
     const char *description;
@@ -142,6 +154,7 @@ static struct {
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
+    {"testexpr", "Test the expr runs", cmd_testexpr}
     /* TODO: Add more commands */
 
 };
