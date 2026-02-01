@@ -164,13 +164,16 @@ bool check_parentheses(uint32_t p, uint32_t q) {
 
 int main_sign(int p, int q, char a, char b) {
 
-    int i = 0, left = 0, right = 0;
-
-    for (i = p; i <= q; i++) {
-        left = tokens[i].type == '(' ? left + 1 : left;
-        right = tokens[i].type == ')' ? right + 1 : right;
-        if (left == right) {
-            if (tokens[i].type == a || tokens[i].type == b)
+    int i, j, parent_count = 0;
+    for (i = p; i < q; i++) {
+        if (tokens[i].type == a || tokens[i].type == b) {
+            for (j = p; j < i; j++) {
+                if (tokens[j].type == '(')
+                    parent_count++;
+                if (tokens[j].type == ')')
+                    parent_count--;
+            }
+            if (parent_count == 0)
                 return i;
         }
     }
