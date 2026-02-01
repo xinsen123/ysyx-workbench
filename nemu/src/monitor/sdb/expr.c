@@ -132,6 +132,9 @@ static bool make_token(char *e) {
 
                 break;
             }
+
+            while (e[position] == ' ')// remove space
+                position++;
         }
 
         if (i == NR_REGEX) {
