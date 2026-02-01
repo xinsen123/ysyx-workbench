@@ -134,11 +134,13 @@ static int cmd_testexpr(char *args) {
     FILE *input = fopen(
         "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
     char buf[4096];
-    // int result;
+    char *result;
     bool success = 0;
 
     while (fgets(buf, 4096, input)) {
-        printf("expr: %s result: %d\n", buf, expr(buf, &success));
+        result = strtok(buf, " ");
+        printf("expr: %s result: %d right:%s\n", buf, expr(buf, &success),
+               result);
     }
     return 0;
 }
