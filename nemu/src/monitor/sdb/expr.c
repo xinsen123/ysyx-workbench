@@ -92,6 +92,7 @@ static int nr_token __attribute__((used)) = 0;
 static bool make_token(char *e) {
     int position = 0;
     int i;
+    int ptoken = 0;
     regmatch_t pmatch;
 
     nr_token = 0;
@@ -118,10 +119,11 @@ static bool make_token(char *e) {
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
-                    strncpy(tokens->str, e + position, substr_len);
-                    tokens->str[31] = '\0';
+                    strncpy(tokens[ptoken].str, e + position, substr_len);
+                    tokens[ptoken].str[31] = '\0';
                 default:
-                    tokens->type = rules[i].token_type;
+                    tokens[ptoken].type = rules[i].token_type;
+                    ptoken++;
                 }
 
                 break;
