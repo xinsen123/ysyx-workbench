@@ -89,14 +89,13 @@ static Token tokens[32]
     __attribute__((used)) = {}; //__attribute__ do not clear it even if not used
 static int nr_token __attribute__((used)) = 0;
 
-int ptoken = 0;
-
 static bool make_token(char *e) {
     int position = 0;
     int i;
     regmatch_t pmatch;
 
     nr_token = 0;
+
 
     while (e[position] != '\0') {
         /* Try all rules one by one. */
@@ -120,11 +119,11 @@ static bool make_token(char *e) {
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
-                    strncpy(tokens[ptoken].str, e + position, substr_len);
-                    tokens[ptoken].str[31] = '\0';
+                    strncpy(tokens[nr_token].str, e + position, substr_len);
+                    tokens[nr_token].str[31] = '\0';
                 default:
-                    tokens[ptoken].type = rules[i].token_type;
-                    ptoken++;
+                    tokens[nr_token].type = rules[i].token_type;
+                    nr_token++;
                 }
 
                 break;
@@ -233,6 +232,6 @@ word_t expr(char *e, bool *success) {
     }
 
     /* TODO: Insert codes to evaluate the expression. */
-    eval(0, ptoken - 1);
+    eval(0, nr_token - 1);
     return 0;
 }
