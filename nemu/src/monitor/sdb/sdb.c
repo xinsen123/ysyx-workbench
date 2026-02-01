@@ -124,10 +124,9 @@ static int cmd_x(char *args) {
 };
 
 static int cmd_p(char *args) {
-    char *arg1 = strtok(NULL, " ");
     bool success = 0;
 
-    printf("result: %d\n", expr(arg1, &success));
+    printf("result: %d\n", expr(args, &success));
     return 0;
 }
 
