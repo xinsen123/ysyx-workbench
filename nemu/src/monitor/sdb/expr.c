@@ -198,7 +198,8 @@ int eval(uint32_t p, uint32_t q) {
     } else {
         uint32_t op;
         op = main_sign(p, q, '*', '/');
-        op = main_sign(p, q, '+', '-'); // 后加减先乘除，若有加减则会覆盖
+        if (op == 0)
+            op = main_sign(p, q, '+', '-'); // 后加减先乘除，若有加减则会覆盖
         if (op == 0)
             assert(0);
 
