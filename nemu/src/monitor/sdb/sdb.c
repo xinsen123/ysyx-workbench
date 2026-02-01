@@ -137,7 +137,7 @@ static int cmd_testexpr(char *args) {
     // int result;
     bool success = 0;
 
-    while (fscanf(input, "%s", buf)) {
+    while (fgets(buf, 4096, input)) {
         printf("expr: %s result: %d\n", buf, expr(buf, &success));
     }
     return 0;
