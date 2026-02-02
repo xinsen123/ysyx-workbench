@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "debug.h"
 #include <assert.h>
 #include <isa.h>
 
@@ -187,7 +188,7 @@ int main_sign(int p, int q, char a, char b) {
 int eval(uint32_t p, uint32_t q) {
     if (p > q) {
         /* Bad expression */
-        assert(0);
+        panic("Error occured in evaluate");
     } else if (p == q) {
         /* Single token.
          * For now this token should be a number.
@@ -206,7 +207,7 @@ int eval(uint32_t p, uint32_t q) {
         if (op == 0)
             op = main_sign(p, q, '*', '/'); // 后加减先乘除，若有加减则会覆盖
         if (op == 0)
-            assert(0);
+            Assert(op == 0, "Invalid expr");
 
         int val1 = eval(p, op - 1);
         int val2 = eval(op + 1, q);
@@ -219,11 +220,10 @@ int eval(uint32_t p, uint32_t q) {
         case '*':
             return val1 * val2;
         case '/':
-            if (val2 == 0)
-                assert(0);
+            Assert(val2 == 0, "0 can't be div");
             return val1 / val2;
         default:
-            assert(0);
+            panic("Cannot recognise the opsign");
         }
     }
 }
