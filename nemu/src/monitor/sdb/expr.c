@@ -158,7 +158,7 @@ bool check_parentheses(uint32_t p, uint32_t q) {
             max_num < left_num - right_num ? left_num - right_num : max_num;
     }
     if (tokens[p].type == '(' && tokens[q].type == ')' &&
-        left_num == right_num && max_num == left_num) {
+        left_num == right_num && max_num >= 2) {
         return true;
     } else {
         return false;
