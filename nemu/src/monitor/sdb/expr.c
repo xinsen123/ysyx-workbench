@@ -49,12 +49,13 @@ static struct rule {
 
     {" +", TK_NOTYPE}, // spaces
     {"\\+", '+'},      // plus
-    {"==", TK_EQ},     // equal
     {"\\-", '-'},      // sub
+    {"\\-", '_'},      // opposite
     {"\\*", '*'},      // mul
     {"/", '/'},        // div
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
+    {"==", TK_EQ},     // equal
     {"0x[0-9]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
@@ -66,6 +67,7 @@ static regex_t re[NR_REGEX] = {};
 /* Rules are used for many times.
  * Therefore we compile them only once before any usage.
  */
+
 void init_regex() {
     int i;
     char error_msg[128];
@@ -89,6 +91,16 @@ typedef struct token {
 static Token tokens[1024]
     __attribute__((used)) = {}; //__attribute__ do not clear it even if not used
 static int nr_token __attribute__((used)) = 0;
+
+/*those are indivial values*/
+
+bool is_type(int type, int *type_list) {
+    int size = sizeof(type_list);
+    for (int i = 0; i < size; i++) {
+        if (type == type_list[i]) return true;
+    }
+    return false;
+}
 
 static bool make_token(char *e) {
     int position = 0;
@@ -151,11 +163,11 @@ static bool make_token(char *e) {
 bool check_parentheses(uint32_t p, uint32_t q) {
     if (tokens[p].type != '(' || tokens[q].type != ')') return false;
     int i, balance = 0;
-    
+
     for (i = p; i < q; i++) {
-        if(tokens[i].type == '(') balance++;
+        if (tokens[i].type == '(') balance++;
         else if (tokens[i].type == ')') balance--;
-        if(balance == 0) return false;
+        if (balance == 0) return false;
     }
 
     return true;
@@ -165,6 +177,7 @@ int main_sign(int p, int q, char a, char b) {
 
     int i, j, parent_count;
     for (i = q; i >= p; i--) {
+
         if (tokens[i].type == a || tokens[i].type == b) {
             parent_count = 0;
             for (j = q; j > i; j--) {
