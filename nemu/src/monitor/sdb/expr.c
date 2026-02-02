@@ -51,7 +51,7 @@ static struct rule {
     {" +", TK_NOTYPE},    // spaces
     {"\\+", '+'},         // plus
     {"\\-", '-'},         // sub
-    {"opposite", TK_OPPOSITE}, // opposite, must after of '-'
+    {"TK_OP", TK_OPPOSITE}, // opposite, must after of '-'
     {"\\*", '*'},         // mul
     {"/", '/'},           // div
     {"\\(", '('},         // (
