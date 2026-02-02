@@ -214,7 +214,7 @@ int eval(uint32_t p, uint32_t q) {
         case '*':
             return val1 * val2;
         case '/':
-            Assert(val2 == 0, "0 can't be div");
+            Assert(val2 != 0, "0 can't be div");
             return val1 / val2;
         default:
             panic("Cannot recognise the opsign");
