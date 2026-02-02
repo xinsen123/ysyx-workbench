@@ -137,13 +137,16 @@ static int cmd_testexpr(char *args) {
     int infer, result, count=0;
 
     while (fgets(buf, 4096, input)) {
-        printf("----------------------\n");
+        printf("------------------------------------------\n");
         printf("The %dth running\n", count);
+
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
         result = expr(expa, &success);
         if (infer != result) Log("Error result in calculate"); // 结果检查
+        
         printf("expr: %s result: %d\n", expa, result);
+        count++;
     }
     return 0;
 }
