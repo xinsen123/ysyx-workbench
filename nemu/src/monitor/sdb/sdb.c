@@ -138,6 +138,7 @@ static int cmd_testexpr(char *args) {
     bool success = 0;
 
     while (fgets(buf, 4096, input)) {
+        buf[4095] = '\0';
         while (buf[offset] != ' ')
             offset++;
         printf("expr: %s result: %d\n", buf + offset, expr(buf, &success));
