@@ -1,28 +1,49 @@
-CSRC = csrc/main.cpp
-VSRC = $(wildcard vsrc/*.v)
-OBJDIR = obj_dir
-PREFIX = Vtop
-TARGET = $(OBJDIR)/$(PREFIX)
+TOPNAME = top
+NXDC_FILES = constr/top.nxdc
+INC_PATH ?=
+
 VERILATOR = verilator
-TRACE = 
+VERILATOR_CFLAGS += -MMD --build -cc  \
+				-O3 --x-assign fast --x-initial fast --noassert
 
-.PHONY: all clean sim
+BUILD_DIR = ./build
+OBJ_DIR = $(BUILD_DIR)/obj_dir
+BIN = $(BUILD_DIR)/$(TOPNAME)
 
-all: $(TARGET)
+default: $(BIN)
 
-$(TARGET): $(VSRC) $(CSRC) | $(OBJDIR)
-	$(VERILATOR) --cc $(TRACE) $(VSRC) --exe $(CSRC)
-	$(MAKE) -C $(OBJDIR) -f $(PREFIX).mk $(PREFIX)
+$(shell mkdir -p $(BUILD_DIR))
 
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
+# constraint file
+SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+$(SRC_AUTO_BIND): $(NXDC_FILES)
+	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
+# project source
+VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
+CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+CSRCS += $(SRC_AUTO_BIND)
 
-sim:
-	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	./obj_dir/$(PREFIX)
+# rules for NVBoard
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+
+# rules for verilator
+INCFLAGS = $(addprefix -I, $(INC_PATH))
+CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\"" -ggdb
+
+$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
+	@rm -rf $(OBJ_DIR)
+	$(VERILATOR) $(VERILATOR_CFLAGS) \
+		--top-module $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
+
+all: default
+
+run: $(BIN)
+	@$^
 
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(BUILD_DIR)
 
-include ../Makefile
+.PHONY: default all clean run
