@@ -150,21 +150,15 @@ static bool make_token(char *e) {
 
 bool check_parentheses(uint32_t p, uint32_t q) {
     if (tokens[p].type != '(' || tokens[q].type != ')') return false;
-    int nums[(q - p) / 2], i, sp = 0;
+    int i, balance = 0;
+    
     for (i = p; i < q; i++) {
-        if (tokens[i].type == '(') {
-            nums[sp] = i;
-            sp++;
-        } else if (tokens[i].type == ')') {
-            nums[sp] = -1;
-            sp--;
-        }
+        if(tokens[i].type == '(') balance++;
+        else if (tokens[i].type == ')') balance--;
+        if(balance == 0) return false;
     }
-    if (nums[sp] == p) {
-        return true;
-    } else {
-        return false;
-    }
+
+    return true;
 }
 
 int main_sign(int p, int q, char a, char b) {
