@@ -149,16 +149,18 @@ static bool make_token(char *e) {
 }
 
 bool check_parentheses(uint32_t p, uint32_t q) {
-    int i, left_num = 0, right_num = 0,
-           max_num = 0; // 检测括号存在的峰值和总数量，若峰值!=总数量则有问题
-    for (i = p; i <= q; i++) {
-        if (tokens[i].type == '(') left_num++;
-        if (tokens[i].type == ')') right_num++;
-        max_num =
-            max_num < left_num - right_num ? left_num - right_num : max_num;
+    if (tokens[p].type != '(' || tokens[q].type != ')') return false;
+    int nums[(q - p) / 2], i, sp = 0;
+    for (i = p; i < q; i++) {
+        if (tokens[i].type == '(') {
+            nums[sp] = i;
+            sp++;
+        } else if (tokens[i].type == ')') {
+            nums[sp] = -1;
+            sp--;
+        }
     }
-    if (tokens[p].type == '(' && tokens[q].type == ')' &&
-        left_num == right_num && max_num >= 2) {
+    if (nums[sp] == p) {
         return true;
     } else {
         return false;
