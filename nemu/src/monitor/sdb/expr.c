@@ -124,7 +124,6 @@ static bool make_token(char *e) {
                 int substr_len = pmatch.rm_eo;
 
                 if (rules[i].token_type == '-') {
-                    printf("oppo\n");
                     if (nr_token == 0) i++;
                     else if (is_type(tokens[nr_token - 1].type, oppo_f_type))
                         i++;
