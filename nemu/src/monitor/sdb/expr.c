@@ -31,8 +31,9 @@
 enum {
     TK_NOTYPE = 256,
     TK_EQ,
-    TK_DNUM, // full 10 add 1
-    TK_XNUM, // full 16
+    TK_OPPOSITE, // opposite
+    TK_DNUM,     // full 10 add 1
+    TK_XNUM,     // full 16
 
     /* TODO: Add more token types */
 
@@ -47,15 +48,15 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {" +", TK_NOTYPE}, // spaces
-    {"\\+", '+'},      // plus
-    {"\\-", '-'},      // sub
-    {"\\-", '_'},      // opposite
-    {"\\*", '*'},      // mul
-    {"/", '/'},        // div
-    {"\\(", '('},      // (
-    {"\\)", ')'},      // )
-    {"==", TK_EQ},     // equal
+    {" +", TK_NOTYPE},    // spaces
+    {"\\+", '+'},         // plus
+    {"\\-", '-'},         // sub
+    {"\\-", TK_OPPOSITE}, // opposite, must after of '-'
+    {"\\*", '*'},         // mul
+    {"/", '/'},           // div
+    {"\\(", '('},         // (
+    {"\\)", ')'},         // )
+    {"==", TK_EQ},        // equal
     {"0x[0-9]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
@@ -93,6 +94,7 @@ static Token tokens[1024]
 static int nr_token __attribute__((used)) = 0;
 
 /*those are indivial values*/
+static int oppo_f_type[] = {'+', '-', '*', '/', '('};
 
 bool is_type(int type, int *type_list) {
     int size = sizeof(type_list);
@@ -120,6 +122,11 @@ static bool make_token(char *e) {
                 pmatch.rm_so == 0) {
                 char *substr_start = e + position;
                 int substr_len = pmatch.rm_eo;
+
+                if (rules[i].token_type == TK_OPPOSITE) {
+                    if (nr_token == 0) i++;
+                    else if (is_type(tokens[nr_token-1].type, oppo_f_type)) i++;
+                }
 
                 Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
                     i, rules[i].regex, position, substr_len, substr_len,
@@ -241,5 +248,6 @@ word_t expr(char *e, bool *success) {
     /* TODO: Insert codes to evaluate the expression. */
 
     printf("nr_token: %d\n", nr_token);
-    return eval(0, nr_token - 1);
+    // return eval(0, nr_token - 1);
+    return 0;
 }
