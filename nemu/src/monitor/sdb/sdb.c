@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "sdb.h"
+#include "debug.h"
 #include <cpu/cpu.h>
 #include <isa.h>
 #include <readline/history.h>
@@ -22,6 +23,7 @@
 #include <memory/vaddr.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -72,8 +74,7 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
-    if (is_args_null(args))
-        return 0;
+    if (is_args_null(args)) return 0;
     int num = atoi(strtok(NULL, " "));
     cpu_exec(num > 0 ? num : 1);
     return 0;
@@ -81,8 +82,7 @@ static int cmd_si(char *args) {
 
 static int cmd_info(char *args) {
     char *arg1 = strtok(NULL, " ");
-    if (is_args_null(args))
-        return 0;
+    if (is_args_null(args)) return 0;
     if (strcmp(arg1, "r") == 0) {
         isa_reg_display();
     }
@@ -93,8 +93,7 @@ static int cmd_x(char *args) {
     int len = 0;
     word_t addr = 0;
     char *arg_len = strtok(NULL, " ");
-    if (is_args_null(arg_len))
-        return 0;
+    if (is_args_null(arg_len)) return 0;
 
     char *arg_addr = strtok(NULL, " ");
     if (arg_addr != NULL) {
@@ -111,10 +110,8 @@ static int cmd_x(char *args) {
 
     word_t addr_end = addr + len;
     for (; addr < addr_end; addr++) {
-        if (addr % 4 == 0 && addr != MEM_BEGIN)
-            printf("\n");
-        if (addr % 4 == 0)
-            printf("%#010x: ", addr);
+        if (addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
+        if (addr % 4 == 0) printf("%#010x: ", addr);
         word_t word = vaddr_read(addr, 1);
         printf("%02x ", word);
     }
@@ -135,11 +132,15 @@ static int cmd_testexpr(char *args) {
         "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
     char buf[4096];
     bool success = 0;
-    
+    char *expa;
+    int infer, result;
+
     while (fgets(buf, 4096, input)) {
-        char *expa = strchr(buf, ' ');
-        buf[4095] = '\0';
-        printf("expr: %s result: %d\n", expa, expr(expa, &success));
+        expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
+        infer = atoi(buf);
+        result = expr(expa, &success);
+        if (infer != result) panic("Error occured in calculate"); // 结果检查
+        printf("expr: %s result: %d\n", expa, result);
     }
     return 0;
 }
