@@ -145,7 +145,7 @@ static int cmd_testexpr(char *args) {
         result = expr(expa, &success);
         if (infer != result) panic("Error result in calculate"); // 结果检查
         
-        printf("expr: %s result: %u\n", expa, result);
+        printf("expr: %s result: %d\n", expa, result);
         count++;
     }
     return 0;
