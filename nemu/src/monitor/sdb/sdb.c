@@ -134,7 +134,7 @@ static int cmd_testexpr(char *args) {
     char buf[4096];
     bool success = 0;
     char *expa;
-    int infer, result, count=0;
+    int infer, result, count=1;
 
     while (fgets(buf, 4096, input)) {
         printf("------------------------------------------\n");
