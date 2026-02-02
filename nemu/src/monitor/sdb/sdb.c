@@ -129,7 +129,7 @@ static int cmd_p(char *args) {
 
 static int cmd_testexpr(char *args) {
     FILE *input = fopen(
-        "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
+        "$(NEMU)/tools/gen-expr/input", "r");
     char buf[4096];
     bool success = 0;
     char *expa;
