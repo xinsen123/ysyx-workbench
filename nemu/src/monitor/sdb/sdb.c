@@ -17,6 +17,7 @@
 #include "debug.h"
 #include <cpu/cpu.h>
 #include <isa.h>
+#include <iso646.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -133,9 +134,11 @@ static int cmd_testexpr(char *args) {
     char buf[4096];
     bool success = 0;
     char *expa;
-    int infer, result;
+    int infer, result, count=0;
 
     while (fgets(buf, 4096, input)) {
+        printf("----------------------\n");
+        printf("The %dth running\n", count);
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
         result = expr(expa, &success);
