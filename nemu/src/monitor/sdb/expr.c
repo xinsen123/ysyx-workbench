@@ -163,9 +163,10 @@ bool check_parentheses(uint32_t p, uint32_t q) {
 
 int main_sign(int p, int q, char a, char b) {
 
-    int i, j, parent_count = 0;
+    int i, j, parent_count;
     for (i = q; i >= p; i--) {
         if (tokens[i].type == a || tokens[i].type == b) {
+            parent_count = 0;
             for (j = q; j > i; j--) {
                 if (tokens[j].type == '(') parent_count++;
                 if (tokens[j].type == ')') parent_count--;
