@@ -138,7 +138,7 @@ static int cmd_testexpr(char *args) {
 
     while (fgets(buf, 4096, input)) {
         printf("------------------------------------------\n");
-        printf("The %dth running\n", count);
+        printf("The %dth running:\n", count);
 
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
