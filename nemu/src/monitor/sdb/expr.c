@@ -201,7 +201,7 @@ int eval(uint32_t p, uint32_t q) {
         op = main_sign(p, q, '+', '-');
         if (op == 0)
             op = main_sign(p, q, '*', '/'); // 后加减先乘除，若有加减则会覆盖
-        Assert(op == 0, "Invalid expr");
+        Assert(op != 0, "Invalid expr");
 
         int val1 = eval(p, op - 1);
         int val2 = eval(op + 1, q);
