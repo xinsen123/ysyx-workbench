@@ -139,7 +139,7 @@ static int cmd_testexpr(char *args) {
     while (fgets(buf, 4096, input)) {
         char *expa = strchr(buf, ' ');
         buf[4095] = '\0';
-        printf("expr: %s result: %d\n", buf, expr(expa, &success));
+        printf("expr: %s result: %d\n", expa, expr(expa, &success));
     }
     return 0;
 }
