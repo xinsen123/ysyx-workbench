@@ -152,10 +152,8 @@ bool check_parentheses(uint32_t p, uint32_t q) {
     int i, left_num = 0, right_num = 0,
            max_num = 0; // 检测括号存在的峰值和总数量，若峰值!=总数量则有问题
     for (i = p; i <= q; i++) {
-        if (tokens[i].type == '(')
-            left_num++;
-        if (tokens[i].type == ')')
-            right_num++;
+        if (tokens[i].type == '(') left_num++;
+        if (tokens[i].type == ')') right_num++;
         max_num =
             max_num < left_num - right_num ? left_num - right_num : max_num;
     }
@@ -173,13 +171,10 @@ int main_sign(int p, int q, char a, char b) {
     for (i = q; i >= p; i--) {
         if (tokens[i].type == a || tokens[i].type == b) {
             for (j = q; j > i; j--) {
-                if (tokens[j].type == '(')
-                    parent_count++;
-                if (tokens[j].type == ')')
-                    parent_count--;
+                if (tokens[j].type == '(') parent_count++;
+                if (tokens[j].type == ')') parent_count--;
             }
-            if (parent_count == 0)
-                return i;
+            if (parent_count == 0) return i;
         }
     }
     return 0;
@@ -206,8 +201,7 @@ int eval(uint32_t p, uint32_t q) {
         op = main_sign(p, q, '+', '-');
         if (op == 0)
             op = main_sign(p, q, '*', '/'); // 后加减先乘除，若有加减则会覆盖
-        if (op == 0)
-            Assert(op == 0, "Invalid expr");
+        Assert(op == 0, "Invalid expr");
 
         int val1 = eval(p, op - 1);
         int val2 = eval(op + 1, q);
