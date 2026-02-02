@@ -86,7 +86,7 @@ typedef struct token {
     char str[32];
 } Token;
 
-static Token tokens[32]
+static Token tokens[1024]
     __attribute__((used)) = {}; //__attribute__ do not clear it even if not used
 static int nr_token __attribute__((used)) = 0;
 
