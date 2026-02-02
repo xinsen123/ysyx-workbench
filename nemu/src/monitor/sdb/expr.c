@@ -48,15 +48,15 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {" +", TK_NOTYPE},    // spaces
-    {"\\+", '+'},         // plus
-    {"\\-", '-'},         // sub
+    {" +", TK_NOTYPE},      // spaces
+    {"\\+", '+'},           // plus
+    {"\\-", '-'},           // sub
     {"TK_OP", TK_OPPOSITE}, // opposite, must after of '-'
-    {"\\*", '*'},         // mul
-    {"/", '/'},           // div
-    {"\\(", '('},         // (
-    {"\\)", ')'},         // )
-    {"==", TK_EQ},        // equal
+    {"\\*", '*'},           // mul
+    {"/", '/'},             // div
+    {"\\(", '('},           // (
+    {"\\)", ')'},           // )
+    {"==", TK_EQ},          // equal
     {"0x[0-9]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
@@ -126,7 +126,8 @@ static bool make_token(char *e) {
                 if (rules[i].token_type == '-') {
                     printf("oppo\n");
                     if (nr_token == 0) i++;
-                    else if (is_type(tokens[nr_token-1].type, oppo_f_type)) i++;
+                    else if (is_type(tokens[nr_token - 1].type, oppo_f_type))
+                        i++;
                 }
 
                 Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
@@ -213,6 +214,8 @@ int eval(uint32_t p, uint32_t q) {
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
+    } else if (tokens[p].type == TK_OPPOSITE) {
+        return -eval(p+1, q);
     } else {
         uint32_t op;
         op = main_sign(p, q, '+', '-');
