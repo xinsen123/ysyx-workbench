@@ -115,6 +115,8 @@ static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 static int op_2th[] = {'+', '-'};
 static int op_3th[] = {'*', '/'};
 
+static int ambi_type[] = {'-'};
+
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
         if (type == type_list[i]) return true;
@@ -230,6 +232,14 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
     if (op == 0) op = main_sign(p, q, op_3th);
     Assert(op != 0, "Invalid expr");
 
+    if (is_type(tokens[op].type, ambi_type, sizeof(ambi_type)) == true) {
+        if (op == p ||
+            is_type(tokens[op - 1].type, oppo_f_type, sizeof(oppo_f_type))) {
+            if (q - p == 1) return -eval(q, q);
+            else if (check_parentheses(p + 1, q)) return -eval(p + 1, q);
+        }
+    }
+
     int val1 = eval(p, op - 1);
     int val2 = eval(op + 1, q);
 
@@ -237,10 +247,6 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
     case '+':
         return val1 + val2;
     case '-':
-        if (op == p || is_type(tokens[op-1].type, oppo_f_type, sizeof(oppo_f_type))) {
-            if (q - p == 1) return -eval(q, q);
-            else if (check_parentheses(p + 1, q)) return -eval(p + 1, q);
-        }
         return val1 - val2;
     case '*':
         return val1 * val2;
@@ -263,14 +269,12 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
 }
 
 int eval(uint32_t p, uint32_t q) {
-    if (p > q) {
-        /* Bad expression */
+    if (p > q) { /* Bad expression */
         panic("Error occured in evaluate");
-    } else if (p == q) {
-        /* Single token.
-         * For now this token should be a number.
-         * Return the value of the number.
-         */
+    } else if (p == q) { /* Single token.
+                          * For now this token should be a number.
+                          * Return the value of the number.
+                          */
         return atoi(tokens[p].str);
 
     } else if (check_parentheses(p, q) == true) {
@@ -278,24 +282,24 @@ int eval(uint32_t p, uint32_t q) {
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
-
-    } else if (tokens[p].type == TK_OPPOSITE) {
-        if (q - p == 1) {
-            switch (tokens[p].type) {
-            case TK_OPPOSITE:
-                return -eval(p + 1, p + 1);
-            default:
-                panic("invaild opcode");
-            }
-        } else if (check_parentheses(p + 1, q) == true) {
-            switch (tokens[p].type) {
-            case TK_OPPOSITE:
-                return -eval(p + 1, q);
-            default:
-                panic("invaild opcode");
-            }
-        }
     }
+    // else if (tokens[p].type == TK_OPPOSITE) {
+    //     if (q - p == 1) {
+    //         switch (tokens[p].type) {
+    //         case TK_OPPOSITE:
+    //             return -eval(p + 1, p + 1);
+    //         default:
+    //             panic("invaild opcode");
+    //         }
+    //     } else if (check_parentheses(p + 1, q) == true) {
+    //         switch (tokens[p].type) {
+    //         case TK_OPPOSITE:
+    //             return -eval(p + 1, q);
+    //         default:
+    //             panic("invaild opcode");
+    //         }
+    //     }
+    // }
     return eval_op_eval(p, q);
 }
 
