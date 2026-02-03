@@ -101,9 +101,9 @@ static int oppo_f_type[] = {'+',   '-',   '*',   '/',   '(',
 
 static int op_1th[] = {'*', '/'};
 static int op_2th[] = {'+', '-'};
-static int op_3th[] = {TK_ST, TK_BT, };
-static int op_4th[] = {TK_EQ, TK_NE, };
-static int op_5th[] = {TK_AND, };
+static int op_3th[] = {TK_ST, TK_BT};
+static int op_4th[] = {TK_EQ, TK_NE};
+static int op_5th[] = {TK_AND};
 
 static int ambi_type[] = {'-', '*'}; // change calc
 
@@ -218,11 +218,11 @@ int main_sign(int p, int q, int *op_list) {
 
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
-    op = main_sign(p, q, op_5th);// 运算具有优先级顺序
+    op = main_sign(p, q, op_5th); // 运算具有优先级顺序
     if (op == 0) op = main_sign(p, q, op_4th);
     if (op == 0) op = main_sign(p, q, op_3th);
     if (op == 0) op = main_sign(p, q, op_2th);
-    if (op == 0) op = main_sign(p, q, op_1th); 
+    if (op == 0) op = main_sign(p, q, op_1th);
 
     Assert(op != 0, "Invalid expr");
 
