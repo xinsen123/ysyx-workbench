@@ -39,6 +39,7 @@ enum {
     TK_OPPOSITE,     // opposite
     TK_DNUM,         // full 10 add 1
     TK_XNUM,         // full 16
+    TK_POINTER,
 
     /* TODO: Add more token types */
 
@@ -59,7 +60,9 @@ static struct rule {
     {"\\-", '-'},           // sub
     {"TK_OP", TK_OPPOSITE}, // opposite, must after of '-'
 
-    {"\\*", '*'},  // mul
+    {"\\*", '*'}, // mul
+    {"TK_PO", TK_POINTER},
+
     {"/", '/'},    // div
     {"\\(", '('},  // (
     {"\\)", ')'},  // )
@@ -105,7 +108,12 @@ static Token tokens[1024]
 static int nr_token __attribute__((used)) = 0;
 
 /*those are indivial values*/
-static int oppo_f_type[] = {'+', '-', '*', '/', '(', TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
+static int oppo_f_type[] = {'+',   '-',   '*',   '/',   '(',
+                            TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
+
+static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
+static int op_2th[] = {'+', '-'};
+static int op_3th[] = {'*', '/'};
 
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
@@ -133,11 +141,12 @@ static bool make_token(char *e) {
                 char *substr_start = e + position;
                 int substr_len = pmatch.rm_eo;
 
-                if (rules[i].token_type == '-') {
-                    if (nr_token == 0) i++;
-                    else if (is_type(tokens[nr_token - 1].type, oppo_f_type, sizeof(oppo_f_type)))
-                        i++;
-                }
+                // if (rules[i].token_type == '-') {
+                //     if (nr_token == 0) i++;
+                //     else if (is_type(tokens[nr_token - 1].type, oppo_f_type,
+                //     sizeof(oppo_f_type)))
+                //         i++;
+                // }
 
                 Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
                     i, rules[i].regex, position, substr_len, substr_len,
@@ -210,10 +219,6 @@ int main_sign(int p, int q, int *op_list) {
     return 0;
 }
 
-static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
-static int op_2th[] = {'+', '-'};
-static int op_3th[] = {'*', '/'};
-
 // static int nums[] = {TK_XNUM, TK_DNUM};
 
 int eval(uint32_t p, uint32_t q);
@@ -232,6 +237,10 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
     case '+':
         return val1 + val2;
     case '-':
+        if (op == p || is_type(tokens[op-1].type, oppo_f_type, sizeof(oppo_f_type))) {
+            if (q - p == 1) return -eval(q, q);
+            else if (check_parentheses(p + 1, q)) return -eval(p + 1, q);
+        }
         return val1 - val2;
     case '*':
         return val1 * val2;
