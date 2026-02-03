@@ -202,6 +202,8 @@ bool check_parentheses(uint32_t p, uint32_t q) {
     return true;
 }
 
+int eval(uint32_t p, uint32_t q);
+
 int main_sign(int p, int q, int *op_list) {
 
     int i, j, pos, parent_count;
@@ -209,6 +211,14 @@ int main_sign(int p, int q, int *op_list) {
     for (i = q; i >= p; i--) {
         for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
+                if (is_type(tokens[i].type, ambi_type, sizeof(ambi_type)) ==
+                    true) {
+                    if (i == p || is_type(tokens[i - 1].type, oppo_f_type,
+                                          sizeof(oppo_f_type))) {
+                        continue;
+                    }
+                }
+
                 parent_count = 0;
                 for (j = q; j > i; j--) {
                     if (tokens[j].type == '(') parent_count++;
@@ -223,25 +233,14 @@ int main_sign(int p, int q, int *op_list) {
 
 // static int nums[] = {TK_XNUM, TK_DNUM};
 
-int eval(uint32_t p, uint32_t q);
-
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
     op = main_sign(p, q, op_1th);
     if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
     if (op == 0) op = main_sign(p, q, op_3th);
 
-    if (is_type(tokens[op].type, ambi_type, sizeof(ambi_type)) == true) {
-        if (op == p ||
-            is_type(tokens[op - 1].type, oppo_f_type, sizeof(oppo_f_type))) {
-            if (q - p == 1) return -eval(q, q);
-            else if (check_parentheses(p + 1, q)) return -eval(p + 1, q);
-            op = main_sign(p, q, op_3th);
-        }
-    }
-
     Assert(op != 0, "Invalid expr");
-    
+
     int val1 = eval(p, op - 1);
     int val2 = eval(op + 1, q);
 
@@ -284,24 +283,9 @@ int eval(uint32_t p, uint32_t q) {
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
+    } else if (is_type(tokens[p].type, ambi_type, sizeof(ambi_type))) {
+        return eval(p + 1, q);
     }
-    // else if (tokens[p].type == TK_OPPOSITE) {
-    //     if (q - p == 1) {
-    //         switch (tokens[p].type) {
-    //         case TK_OPPOSITE:
-    //             return -eval(p + 1, p + 1);
-    //         default:
-    //             panic("invaild opcode");
-    //         }
-    //     } else if (check_parentheses(p + 1, q) == true) {
-    //         switch (tokens[p].type) {
-    //         case TK_OPPOSITE:
-    //             return -eval(p + 1, q);
-    //         default:
-    //             panic("invaild opcode");
-    //         }
-    //     }
-    // }
     return eval_op_eval(p, q);
 }
 
