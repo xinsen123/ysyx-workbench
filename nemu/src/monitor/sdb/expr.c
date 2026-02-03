@@ -237,7 +237,7 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
             is_type(tokens[op - 1].type, oppo_f_type, sizeof(oppo_f_type))) {
             if (q - p == 1) return -eval(q, q);
             else if (check_parentheses(p + 1, q)) return -eval(p + 1, q);
-            printf("???\n");
+            op = main_sign(p, q, op_3th);
         }
     }
 
