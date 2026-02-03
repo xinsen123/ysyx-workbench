@@ -230,7 +230,6 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
     op = main_sign(p, q, op_1th);
     if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
     if (op == 0) op = main_sign(p, q, op_3th);
-    Assert(op != 0, "Invalid expr");
 
     if (is_type(tokens[op].type, ambi_type, sizeof(ambi_type)) == true) {
         if (op == p ||
@@ -241,6 +240,8 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
         }
     }
 
+    Assert(op != 0, "Invalid expr");
+    
     int val1 = eval(p, op - 1);
     int val2 = eval(op + 1, q);
 
