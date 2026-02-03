@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "debug.h"
+#include "macro.h"
 #include <assert.h>
 #include <isa.h>
 
@@ -214,6 +215,45 @@ static int op_1th[] = {'+', '-'};
 static int op_2th[] = {'*', '/'};
 static int op_3th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 
+static int nums[] = {TK_XNUM, TK_DNUM};
+
+int eval(uint32_t p, uint32_t q);
+
+static int eval_op_eval(uint32_t p, uint32_t q) {
+    uint32_t op;
+    op = main_sign(p, q, op_1th);
+    if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
+    if (op == 0) op = main_sign(p, q, op_3th);
+    Assert(op != 0, "Invalid expr");
+
+    int val1 = eval(p, op - 1);
+    int val2 = eval(op + 1, q);
+
+    switch (tokens[op].type) {
+    case '+':
+        return val1 + val2;
+    case '-':
+        return val1 - val2;
+    case '*':
+        return val1 * val2;
+    case '/':
+        Assert(val2 != 0, "0 can't be div");
+        return val1 / val2;
+    case TK_EQ:
+        return val1 == val2 ? 1 : 0;
+    case TK_NE:
+        return val1 != val2 ? 1 : 0;
+    case TK_ST:
+        return val1 <= val2 ? 1 : 0;
+    case TK_BT:
+        return val1 >= val2 ? 1 : 0;
+    case TK_AND:
+        return val1 && val2 ? 1 : 0;
+    default:
+        panic("Cannot recognise the opsign");
+    }
+}
+
 int eval(uint32_t p, uint32_t q) {
     if (p > q) {
         /* Bad expression */
@@ -224,47 +264,31 @@ int eval(uint32_t p, uint32_t q) {
          * Return the value of the number.
          */
         return atoi(tokens[p].str);
+
     } else if (check_parentheses(p, q) == true) {
         /* The expression is surrounded by a matched pair of parentheses.
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
+
     } else if (tokens[p].type == TK_OPPOSITE) {
-        return -eval(p + 1, q);
-    } else {
-        uint32_t op;
-        op = main_sign(p, q, op_1th);
-        if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
-        if (op == 0) op = main_sign(p, q, op_3th);
-        Assert(op != 0, "Invalid expr");
-
-        int val1 = eval(p, op - 1);
-        int val2 = eval(op + 1, q);
-
-        switch (tokens[op].type) {
-        case '+':
-            return val1 + val2;
-        case '-':
-            return val1 - val2;
-        case '*':
-            return val1 * val2;
-        case '/':
-            Assert(val2 != 0, "0 can't be div");
-            return val1 / val2;
-        case TK_EQ:
-            return val1 == val2 ? 1 : 0;
-        case TK_NE:
-            return val1 != val2 ? 1 : 0;
-        case TK_ST:
-            return val1 <= val2 ? 1 : 0;
-        case TK_BT:
-            return val1 >= val2 ? 1 : 0;
-        case TK_AND:
-            return val1 && val2 ? 1 : 0;
-        default:
-            panic("Cannot recognise the opsign");
+        if (is_type(tokens[p + 1].type, nums) == true) {
+            switch (tokens[p].type) {
+            case TK_OPPOSITE:
+                return -eval(p + 1, p + 1);
+            default:
+                panic("invaild opcode");
+            }
+        } else if (check_parentheses(p + 1, q) == true) {
+            switch (tokens[p].type) {
+            case TK_OPPOSITE:
+                return -eval(p + 1, q);
+            default:
+                panic("invaild opcode");
+            }
         }
     }
+    return eval_op_eval(p, q);
 }
 
 word_t expr(char *e, bool *success) {
