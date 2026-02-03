@@ -283,9 +283,10 @@ int eval(uint32_t p, uint32_t q) {
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
-    } else if (is_type(tokens[p].type, ambi_type, sizeof(ambi_type)) &&
-               p != 0) {
-        return -eval(p + 1, q);
+    } else if (is_type(tokens[p].type, ambi_type, sizeof(ambi_type))) {
+        if (q - p == 1 || check_parentheses(p + 1, q)) {
+            return -eval(p + 1, q);
+        }
     }
     return eval_op_eval(p, q);
 }
