@@ -115,7 +115,7 @@ static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 static int op_2th[] = {'+', '-'};
 static int op_3th[] = {'*', '/'};
 
-static int ambi_type[] = {'-'};
+static int ambi_type[] = {'-', '*'};
 
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
