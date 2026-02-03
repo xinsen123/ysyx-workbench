@@ -215,7 +215,7 @@ static int op_1th[] = {'+', '-'};
 static int op_2th[] = {'*', '/'};
 static int op_3th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 
-static int nums[] = {TK_XNUM, TK_DNUM};
+// static int nums[] = {TK_XNUM, TK_DNUM};
 
 int eval(uint32_t p, uint32_t q);
 
@@ -272,7 +272,7 @@ int eval(uint32_t p, uint32_t q) {
         return eval(p + 1, q - 1);
 
     } else if (tokens[p].type == TK_OPPOSITE) {
-        if (is_type(tokens[p + 1].type, nums) == true) {
+        if (q - p == 1) {
             switch (tokens[p].type) {
             case TK_OPPOSITE:
                 return -eval(p + 1, p + 1);
