@@ -107,8 +107,7 @@ static int nr_token __attribute__((used)) = 0;
 /*those are indivial values*/
 static int oppo_f_type[] = {'+', '-', '*', '/', '(', TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
 
-bool is_type(int type, int *type_list) {
-    int size = sizeof(type_list);
+bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
         if (type == type_list[i]) return true;
     }
@@ -136,7 +135,7 @@ static bool make_token(char *e) {
 
                 if (rules[i].token_type == '-') {
                     if (nr_token == 0) i++;
-                    else if (is_type(tokens[nr_token - 1].type, oppo_f_type))
+                    else if (is_type(tokens[nr_token - 1].type, oppo_f_type, sizeof(oppo_f_type)))
                         i++;
                 }
 
