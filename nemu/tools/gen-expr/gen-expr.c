@@ -46,7 +46,7 @@ static void gen_space() {
 }
 
 static void gen_rand_op() {
-    switch (choose(4)) { // control range
+    switch (choose(9)) { // control range
     case 0:
         gen('+');
         break;
@@ -68,6 +68,14 @@ static void gen_rand_op() {
         gen('=');
         break;
     case 6:
+        gen('<');
+        gen('=');
+        break;
+    case 7:
+        gen('>');
+        gen('=');
+        break;
+    case 8:
         gen('&');
         gen('&');
         break;
@@ -108,7 +116,7 @@ static void gen_rand_expr(int depth) {
         gen('-');
         gen_space();
         gen_num();
-        break;   //generate pointer but dangrous
+        break; // generate pointer but dangrous
     default:
         gen_rand_expr(depth - 1);
         gen_space();
