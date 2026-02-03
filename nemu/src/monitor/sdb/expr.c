@@ -210,11 +210,9 @@ int main_sign(int p, int q, int *op_list) {
     return 0;
 }
 
-
-static int op_1th[] = {'+', '-'}; 
+static int op_1th[] = {'+', '-'};
 static int op_2th[] = {'*', '/'};
-// static int op_3th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
-
+static int op_3th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 
 int eval(uint32_t p, uint32_t q) {
     if (p > q) {
@@ -237,6 +235,7 @@ int eval(uint32_t p, uint32_t q) {
         uint32_t op;
         op = main_sign(p, q, op_1th);
         if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
+        if (op == 0) op = main_sign(p, q, op_3th);
         Assert(op != 0, "Invalid expr");
 
         int val1 = eval(p, op - 1);
