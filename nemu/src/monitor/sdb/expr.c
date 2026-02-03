@@ -196,7 +196,7 @@ int main_sign(int p, int q, int *op_list) {
     int i, j, pos, parent_count;
     int size = sizeof(op_list);
     for (i = q; i >= p; i--) {
-        for (pos = 0; pos < size; p++) {
+        for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
                 parent_count = 0;
                 for (j = q; j > i; j--) {
