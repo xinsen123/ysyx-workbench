@@ -211,9 +211,9 @@ int main_sign(int p, int q, int *op_list) {
     return 0;
 }
 
-static int op_3th[] = {'*', '/'};
-static int op_2th[] = {'+', '-'};
 static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
+static int op_2th[] = {'+', '-'};
+static int op_3th[] = {'*', '/'};
 
 // static int nums[] = {TK_XNUM, TK_DNUM};
 
