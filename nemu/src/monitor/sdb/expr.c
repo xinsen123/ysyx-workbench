@@ -36,13 +36,9 @@ enum {
     TK_ST,           // <=
     TK_BT,           // >=
     TK_AND,          // &&
-    TK_OPPOSITE,     // opposite
     TK_DNUM,         // full 10 add 1
     TK_XNUM,         // full 16
-    TK_POINTER,
-
     /* TODO: Add more token types */
-
 };
 
 static struct rule {
@@ -56,23 +52,14 @@ static struct rule {
 
     {" +", TK_NOTYPE}, // spaces
     {"\\+", '+'},      // plus
-
-    {"\\-", '-'},           // sub
-    {"TK_OP", TK_OPPOSITE}, // opposite, must after of '-'
-
-    {"\\*", '*'}, // mul
-    {"TK_PO", TK_POINTER},
-
-    {"/", '/'},    // div
-    {"\\(", '('},  // (
-    {"\\)", ')'},  // )
-    {"==", TK_EQ}, // equal
-    {"!=", TK_NE},
-    {"<=", TK_ST},
-    {">=", TK_BT},
-    {"&&", TK_AND},
-    {"0x[0-9]+", TK_XNUM},
-    {"[0-9]+", TK_DNUM},
+    {"\\-", '-'},      // sub
+    {"\\*", '*'},      // mul
+    {"/", '/'},        // div
+    {"\\(", '('},      // (
+    {"\\)", ')'},      // )
+    {"==", TK_EQ},     // equal
+    {"!=", TK_NE},     {"<=", TK_ST},         {">=", TK_BT},
+    {"&&", TK_AND},    {"0x[0-9]+", TK_XNUM}, {"[0-9]+", TK_DNUM},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -115,7 +102,7 @@ static int op_1th[] = {TK_EQ, TK_NE, TK_ST, TK_BT, TK_AND};
 static int op_2th[] = {'+', '-'};
 static int op_3th[] = {'*', '/'};
 
-static int ambi_type[] = {'-', '*'};
+static int ambi_type[] = {'-', '*'}; // change calc
 
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
@@ -236,8 +223,8 @@ int main_sign(int p, int q, int *op_list) {
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
     op = main_sign(p, q, op_1th);
-    if (op == 0) op = main_sign(p, q, op_2th); // 运算具有优先级顺序
-    if (op == 0) op = main_sign(p, q, op_3th);
+    if (op == 0) op = main_sign(p, q, op_2th);
+    if (op == 0) op = main_sign(p, q, op_3th); // 运算具有优先级顺序
 
     Assert(op != 0, "Invalid expr");
 
