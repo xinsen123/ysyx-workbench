@@ -284,7 +284,7 @@ int eval(uint32_t p, uint32_t q) {
          */
         return eval(p + 1, q - 1);
     } else if (is_type(tokens[p].type, ambi_type, sizeof(ambi_type))) {
-        return eval(p + 1, q);
+        return -eval(p + 1, q);
     }
     return eval_op_eval(p, q);
 }
