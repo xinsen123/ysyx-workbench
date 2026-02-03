@@ -195,7 +195,7 @@ bool check_parentheses(uint32_t p, uint32_t q) {
 int main_sign(int p, int q, int *op_list) {
 
     int i, j, pos, parent_count;
-    int size = sizeof(op_list);
+    int size = sizeof(&op_list);
     for (i = q; i >= p; i--) {
         for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
