@@ -133,13 +133,6 @@ static bool make_token(char *e) {
                 char *substr_start = e + position;
                 int substr_len = pmatch.rm_eo;
 
-                // if (rules[i].token_type == '-') {
-                //     if (nr_token == 0) i++;
-                //     else if (is_type(tokens[nr_token - 1].type, oppo_f_type,
-                //     sizeof(oppo_f_type)))
-                //         i++;
-                // }
-
                 Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
                     i, rules[i].regex, position, substr_len, substr_len,
                     substr_start);
