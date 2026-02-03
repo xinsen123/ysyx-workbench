@@ -143,9 +143,9 @@ static int cmd_testexpr(char *args) {
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
         result = expr(expa, &success);
-        if (infer != result) panic("Error result in calculate"); // 结果检查
         
         printf("expr: %s result: %d\n", expa, result);
+        if (infer != result) panic("Error result in calculate"); // 结果检查
         count++;
     }
     return 0;
