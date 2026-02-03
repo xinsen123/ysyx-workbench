@@ -105,7 +105,7 @@ static Token tokens[1024]
 static int nr_token __attribute__((used)) = 0;
 
 /*those are indivial values*/
-static int oppo_f_type[] = {'+', '-', '*', '/', '('};
+static int oppo_f_type[] = {'+', '-', '*', '/', '(', TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
 
 bool is_type(int type, int *type_list) {
     int size = sizeof(type_list);
