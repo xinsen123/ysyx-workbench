@@ -92,18 +92,14 @@ static int cmd_info(char *args) {
 
 static int cmd_x(char *args) {
     int len = 0;
-    word_t addr = 0;
+    bool sc;
+
     char *arg_len = strtok(NULL, " ");
-    if (is_args_null(arg_len)) return 0;
+    Assert(arg_len != NULL, "arglen cannot be null");
 
-    char *arg_addr = strtok(NULL, " ");
-    if (arg_addr != NULL) {
-        addr = strtol(arg_addr, NULL, 16);
-    } else {
-        addr = MEM_BEGIN;
-    } // addr = defulat number if args == NULL
+    len = expr(arg_len, &sc);
+    word_t addr = expr(args + strlen(arg_len) + 1, &sc) & ~0x3;
 
-    len = strtol(arg_len, NULL, 10);
     if (addr < MEM_BEGIN || addr > MEM_END) {
         printf("address is out of memory!\n");
         return 0;
@@ -134,7 +130,7 @@ static int cmd_testexpr(char *args) {
     char buf[4096];
     bool success = 0;
     char *expa;
-    int infer, result, count=1;
+    int infer, result, count = 1;
 
     while (fgets(buf, 4096, input)) {
         printf("------------------------------------------\n");
@@ -143,7 +139,7 @@ static int cmd_testexpr(char *args) {
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
         result = expr(expa, &success);
-        
+
         printf("expr: %s result: %d\n", expa, result);
         if (infer != result) panic("Error result in calculate"); // 结果检查
         count++;
