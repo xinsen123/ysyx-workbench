@@ -95,10 +95,11 @@ static int cmd_x(char *args) {
     bool sc;
 
     char *arg_len = strtok(NULL, " ");
-    Assert(arg_len!=NULL, "arglen cannot be null");
-    word_t addr = expr(args, &sc);
+    Assert(arg_len != NULL, "arglen cannot be null");
 
-    len =expr(arg_len, &sc);
+    len = expr(arg_len, &sc);
+    word_t addr = expr(args + sizeof(arg_len), &sc);
+
     if (addr < MEM_BEGIN || addr > MEM_END) {
         printf("address is out of memory!\n");
         return 0;
