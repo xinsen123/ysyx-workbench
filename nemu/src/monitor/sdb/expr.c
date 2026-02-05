@@ -218,8 +218,6 @@ int main_sign(int p, int q, int *op_list, int size) {
     return 0;
 }
 
-// static int nums[] = {TK_XNUM, TK_DNUM};
-
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
     op = main_sign(p, q, op_5th, ARRLEN(op_5th)); // 运算具有优先级顺序
@@ -299,6 +297,5 @@ word_t expr(char *e, bool *success) {
 
     /* TODO: Insert codes to evaluate the expression. */
 
-    printf("nr_token: %d\n", nr_token);
     return eval(0, nr_token - 1);
 }
