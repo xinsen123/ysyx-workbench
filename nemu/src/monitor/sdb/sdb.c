@@ -92,18 +92,13 @@ static int cmd_info(char *args) {
 
 static int cmd_x(char *args) {
     int len = 0;
-    word_t addr = 0;
+    bool sc;
+
     char *arg_len = strtok(NULL, " ");
-    if (is_args_null(arg_len)) return 0;
+    Assert(arg_len!=NULL, "arglen cannot be null");
+    word_t addr = expr(args, &sc);
 
-    char *arg_addr = strtok(NULL, " ");
-    if (arg_addr != NULL) {
-        addr = strtol(arg_addr, NULL, 16);
-    } else {
-        addr = MEM_BEGIN;
-    } // addr = defulat number if args == NULL
-
-    len = strtol(arg_len, NULL, 10);
+    len =expr(arg_len, &sc);
     if (addr < MEM_BEGIN || addr > MEM_END) {
         printf("address is out of memory!\n");
         return 0;
