@@ -112,7 +112,7 @@ static int cmd_x(char *args) {
     word_t addr_end = addr + len;
     for (; addr < addr_end; addr++) {
         if (addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
-        if (addr % 4 == 0) printf("%#010x: ", addr >> 2);
+        if (addr % 4 == 0) printf("%#010x: ", addr);
         word_t word = vaddr_read(addr, 1);
         printf("%02x ", word);
     }
