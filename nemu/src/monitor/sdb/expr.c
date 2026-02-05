@@ -64,7 +64,7 @@ static struct rule {
     {"<=", TK_ST},
     {">=", TK_BT},
     {"&&", TK_AND},
-    {"0x{[0-9]|[a-z]}+", TK_XNUM},
+    {"0x([0-9]|[a-z])+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
 
