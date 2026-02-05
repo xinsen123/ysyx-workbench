@@ -261,11 +261,12 @@ int eval(uint32_t p, uint32_t q) {
                           * For now this token should be a number.
                           * Return the value of the number.
                           */
+        char *endptr;
         switch (tokens[p].type) {
         case TK_DNUM:
-            return atoi(tokens[p].str);
+            return (uint32_t)strtol(tokens[p].str, &endptr, 10);
         case TK_XNUM:
-            return atoi(tokens[p].str + 2);
+            return (uint32_t)strtol(tokens[p].str + 2, &endptr, 16);
         }
 
     } else if (check_parentheses(p, q) == true) {
