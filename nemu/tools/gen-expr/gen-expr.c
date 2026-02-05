@@ -39,13 +39,14 @@ static void gen(char ch) {
     offset++;
 }
 
-static void gen_space(){
+static void gen_space() {
     int i = choose(3);
-    while (i--) gen(' ');
+    while (i--)
+        gen(' ');
 }
 
 static void gen_rand_op() {
-    switch (choose(4)) {
+    switch (choose(9)) { // control range
     case 0:
         gen('+');
         break;
@@ -57,6 +58,26 @@ static void gen_rand_op() {
         break;
     case 3:
         gen('/');
+        break;
+    case 4:
+        gen('=');
+        gen('=');
+        break;
+    case 5:
+        gen('!');
+        gen('=');
+        break;
+    case 6:
+        gen('<');
+        gen('=');
+        break;
+    case 7:
+        gen('>');
+        gen('=');
+        break;
+    case 8:
+        gen('&');
+        gen('&');
         break;
     default:
         assert(0);
@@ -79,7 +100,7 @@ static void gen_rand_expr(int depth) {
         gen_num();
         return;
     }
-    switch (choose(3)) {
+    switch (choose(4)) {
     case 0:
         gen_num();
         gen_space();
@@ -91,6 +112,11 @@ static void gen_rand_expr(int depth) {
         gen_space();
         gen(')');
         break;
+    case 2:
+        gen('-');
+        gen_space();
+        gen_num();
+        break; // generate pointer but dangrous
     default:
         gen_rand_expr(depth - 1);
         gen_space();
@@ -125,8 +151,7 @@ int main(int argc, char *argv[]) {
         fclose(fp);
 
         int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
-        if (ret != 0)
-            continue;
+        if (ret != 0) continue;
 
         fp = popen("/tmp/.expr", "r");
         assert(fp != NULL);
