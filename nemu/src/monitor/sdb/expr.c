@@ -60,8 +60,12 @@ static struct rule {
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
     {"==", TK_EQ},     // equal
-    {"!=", TK_NE},     {"<=", TK_ST},         {">=", TK_BT},
-    {"&&", TK_AND},    {"0x[0-9]+", TK_XNUM}, {"[0-9]+", TK_DNUM},
+    {"!=", TK_NE},
+    {"<=", TK_ST},
+    {">=", TK_BT},
+    {"&&", TK_AND},
+    {"0x{[0-9]|[a-z]}+", TK_XNUM},
+    {"[0-9]+", TK_DNUM},
 };
 
 #define NR_REGEX ARRLEN(rules)
