@@ -150,6 +150,7 @@ static bool make_token(char *e) {
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
+                case TK_REG:
                     strncpy(tokens[nr_token].str, e + position, substr_len);
                     tokens[nr_token].str[31] = '\0';
                 default:
