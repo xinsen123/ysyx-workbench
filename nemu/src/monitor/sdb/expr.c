@@ -15,6 +15,7 @@
 
 #include "debug.h"
 #include "macro.h"
+#include "memory/paddr.h"
 #include <assert.h>
 #include <isa.h>
 
@@ -260,7 +261,12 @@ int eval(uint32_t p, uint32_t q) {
                           * For now this token should be a number.
                           * Return the value of the number.
                           */
-        return atoi(tokens[p].str);
+        switch (tokens[p].type) {
+        case TK_DNUM:
+            return atoi(tokens[p].str);
+        case TK_XNUM:
+            return atoi(tokens[p].str + 2);
+        }
 
     } else if (check_parentheses(p, q) == true) {
         /* The expression is surrounded by a matched pair of parentheses.
@@ -269,7 +275,12 @@ int eval(uint32_t p, uint32_t q) {
         return eval(p + 1, q - 1);
     } else if (is_type(tokens[p].type, ambi_type, ARRLEN(ambi_type))) {
         if (q - p == 1 || check_parentheses(p + 1, q)) {
-            return -eval(p + 1, q);
+            switch (tokens[p].type) {
+            case '-':
+                return -eval(p + 1, q);
+            case '*':
+                return paddr_read(eval(p + 1, q) >> 2, sizeof(uint32_t));
+            }
         }
     }
     return eval_op_eval(p, q);
