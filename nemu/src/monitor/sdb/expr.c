@@ -193,10 +193,10 @@ int main_sign(int p, int q, int *op_list, int size) {
     for (i = q; i >= p; i--) {
         for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
-                if (is_type(tokens[i].type, ambi_type, sizeof(ambi_type)) ==
-                    true) {
+                if (is_type(tokens[i].type, ambi_type,
+                            sizeof(ambi_type) / sizeof(int)) == true) {
                     if (i == p || is_type(tokens[i - 1].type, oppo_f_type,
-                                          sizeof(oppo_f_type))) {
+                                          sizeof(oppo_f_type) / sizeof(int))) {
                         continue;
                     }
                 }
@@ -217,11 +217,12 @@ int main_sign(int p, int q, int *op_list, int size) {
 
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
-    op = main_sign(p, q, op_5th, sizeof(op_5th)); // 运算具有优先级顺序
-    if (op == 0) op = main_sign(p, q, op_4th, sizeof(op_4th));
-    if (op == 0) op = main_sign(p, q, op_3th, sizeof(op_3th));
-    if (op == 0) op = main_sign(p, q, op_2th, sizeof(op_2th));
-    if (op == 0) op = main_sign(p, q, op_1th, sizeof(op_1th));
+    op = main_sign(p, q, op_5th,
+                   sizeof(op_5th) / sizeof(int)); // 运算具有优先级顺序
+    if (op == 0) op = main_sign(p, q, op_4th, sizeof(op_4th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_3th, sizeof(op_3th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_2th, sizeof(op_2th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_1th, sizeof(op_1th) / sizeof(int));
 
     Assert(op != 0, "Invalid expr");
 
@@ -267,7 +268,8 @@ int eval(uint32_t p, uint32_t q) {
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
-    } else if (is_type(tokens[p].type, ambi_type, sizeof(ambi_type))) {
+    } else if (is_type(tokens[p].type, ambi_type,
+                       sizeof(ambi_type) / sizeof(int))) {
         if (q - p == 1 || check_parentheses(p + 1, q)) {
             return -eval(p + 1, q);
         }
