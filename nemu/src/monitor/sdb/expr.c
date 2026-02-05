@@ -15,6 +15,7 @@
 
 #include "debug.h"
 #include "macro.h"
+#include "memory/paddr.h"
 #include <assert.h>
 #include <isa.h>
 
@@ -39,6 +40,7 @@ enum {
     TK_AND,          // &&
     TK_DNUM,         // full 10 add 1
     TK_XNUM,         // full 16
+    TK_REG,
     /* TODO: Add more token types */
 };
 
@@ -59,8 +61,9 @@ static struct rule {
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
     {"==", TK_EQ},     // equal
-    {"!=", TK_NE},     {"<=", TK_ST},         {">=", TK_BT},
-    {"&&", TK_AND},    {"0x[0-9]+", TK_XNUM}, {"[0-9]+", TK_DNUM},
+    {"!=", TK_NE},       {"<=", TK_ST},          {">=", TK_BT},
+    {"&&", TK_AND},      {"\\$[\\$0-9a-z]+", TK_REG}, {"0x[0-9a-zA-Z]+", TK_XNUM},
+    {"[0-9]+", TK_DNUM},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -147,6 +150,7 @@ static bool make_token(char *e) {
                 switch (rules[i].token_type) {
                 case TK_DNUM:
                 case TK_XNUM:
+                case TK_REG:
                     strncpy(tokens[nr_token].str, e + position, substr_len);
                     tokens[nr_token].str[31] = '\0';
                 default:
@@ -193,10 +197,10 @@ int main_sign(int p, int q, int *op_list, int size) {
     for (i = q; i >= p; i--) {
         for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
-                if (is_type(tokens[i].type, ambi_type,
-                            sizeof(ambi_type) / sizeof(int)) == true) {
+                if (is_type(tokens[i].type, ambi_type, ARRLEN(ambi_type)) ==
+                    true) {
                     if (i == p || is_type(tokens[i - 1].type, oppo_f_type,
-                                          sizeof(oppo_f_type) / sizeof(int))) {
+                                          ARRLEN(oppo_f_type))) {
                         continue;
                     }
                 }
@@ -213,16 +217,13 @@ int main_sign(int p, int q, int *op_list, int size) {
     return 0;
 }
 
-// static int nums[] = {TK_XNUM, TK_DNUM};
-
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
-    op = main_sign(p, q, op_5th,
-                   sizeof(op_5th) / sizeof(int)); // 运算具有优先级顺序
-    if (op == 0) op = main_sign(p, q, op_4th, sizeof(op_4th) / sizeof(int));
-    if (op == 0) op = main_sign(p, q, op_3th, sizeof(op_3th) / sizeof(int));
-    if (op == 0) op = main_sign(p, q, op_2th, sizeof(op_2th) / sizeof(int));
-    if (op == 0) op = main_sign(p, q, op_1th, sizeof(op_1th) / sizeof(int));
+    op = main_sign(p, q, op_5th, ARRLEN(op_5th)); // 运算具有优先级顺序
+    if (op == 0) op = main_sign(p, q, op_4th, ARRLEN(op_4th));
+    if (op == 0) op = main_sign(p, q, op_3th, ARRLEN(op_3th));
+    if (op == 0) op = main_sign(p, q, op_2th, ARRLEN(op_2th));
+    if (op == 0) op = main_sign(p, q, op_1th, ARRLEN(op_1th));
 
     Assert(op != 0, "Invalid expr");
 
@@ -261,17 +262,29 @@ int eval(uint32_t p, uint32_t q) {
                           * For now this token should be a number.
                           * Return the value of the number.
                           */
-        return atoi(tokens[p].str);
+        char *endptr;
+        switch (tokens[p].type) {
+        case TK_DNUM:
+            return (uint32_t)strtol(tokens[p].str, &endptr, 10);
+        case TK_XNUM:
+            return (uint32_t)strtol(tokens[p].str, &endptr, 16);
+        case TK_REG:
+            return isa_reg_str2val(tokens[p].str + 1, 0);
+        }
 
     } else if (check_parentheses(p, q) == true) {
         /* The expression is surrounded by a matched pair of parentheses.
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
-    } else if (is_type(tokens[p].type, ambi_type,
-                       sizeof(ambi_type) / sizeof(int))) {
+    } else if (is_type(tokens[p].type, ambi_type, ARRLEN(ambi_type))) {
         if (q - p == 1 || check_parentheses(p + 1, q)) {
-            return -eval(p + 1, q);
+            switch (tokens[p].type) {
+            case '-':
+                return -eval(p + 1, q);
+            case '*':
+                return paddr_read(eval(p + 1, q) & ~0x3, sizeof(uint32_t));
+            }
         }
     }
     return eval_op_eval(p, q);
@@ -285,6 +298,5 @@ word_t expr(char *e, bool *success) {
 
     /* TODO: Insert codes to evaluate the expression. */
 
-    printf("nr_token: %d\n", nr_token);
     return eval(0, nr_token - 1);
 }

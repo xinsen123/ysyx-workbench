@@ -85,8 +85,14 @@ static void gen_rand_op() {
 }
 
 static void gen_num() {
-    char num[32];
-    sprintf(num, "%d\n", choose(99));
+    char num[34];
+    if (choose(3)) {
+        sprintf(num, "%d\n", choose(99));
+    } else {
+        num[0] = '0';
+        num[1] = 'x';
+        snprintf(num, 32, "%x\n", choose(99));
+    }
 
     int i = 0;
     while (num[i] != '\n') {
@@ -113,7 +119,8 @@ static void gen_rand_expr(int depth) {
         gen(')');
         break;
     case 2:
-        gen('-');
+        if (choose(4)) gen('-');
+        else gen('*');
         gen_space();
         gen_num();
         break; // generate pointer but dangrous
