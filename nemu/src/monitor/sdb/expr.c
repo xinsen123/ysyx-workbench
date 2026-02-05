@@ -40,6 +40,7 @@ enum {
     TK_AND,          // &&
     TK_DNUM,         // full 10 add 1
     TK_XNUM,         // full 16
+    TK_REG,
     /* TODO: Add more token types */
 };
 
@@ -60,11 +61,8 @@ static struct rule {
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
     {"==", TK_EQ},     // equal
-    {"!=", TK_NE},
-    {"<=", TK_ST},
-    {">=", TK_BT},
-    {"&&", TK_AND},
-    {"0x[0-9a-zA-Z]+", TK_XNUM},
+    {"!=", TK_NE},       {"<=", TK_ST},          {">=", TK_BT},
+    {"&&", TK_AND},      {"$[a-z0-9]+", TK_REG}, {"0x[0-9a-zA-Z]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
 
@@ -269,6 +267,8 @@ int eval(uint32_t p, uint32_t q) {
             return (uint32_t)strtol(tokens[p].str, &endptr, 10);
         case TK_XNUM:
             return (uint32_t)strtol(tokens[p].str, &endptr, 16);
+        case TK_REG:
+            return isa_reg_str2val(tokens[p].str + 1, 0);
         }
 
     } else if (check_parentheses(p, q) == true) {
