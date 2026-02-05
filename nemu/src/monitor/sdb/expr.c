@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "debug.h"
+#include "macro.h"
 #include <assert.h>
 #include <isa.h>
 
@@ -23,19 +24,22 @@
 #include <regex.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 enum {
-    TK_NOTYPE = 256,
-    TK_EQ,
-    TK_DNUM, // full 10 add 1
-    TK_XNUM, // full 16
-
+    TK_NOTYPE = 256, // none
+    TK_EQ,           // ==
+    TK_NE,           // ！=
+    TK_ST,           // <=
+    TK_BT,           // >=
+    TK_AND,          // &&
+    TK_DNUM,         // full 10 add 1
+    TK_XNUM,         // full 16
     /* TODO: Add more token types */
-
 };
 
 static struct rule {
@@ -49,14 +53,14 @@ static struct rule {
 
     {" +", TK_NOTYPE}, // spaces
     {"\\+", '+'},      // plus
-    {"==", TK_EQ},     // equal
     {"\\-", '-'},      // sub
     {"\\*", '*'},      // mul
     {"/", '/'},        // div
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
-    {"0x[0-9]+", TK_XNUM},
-    {"[0-9]+", TK_DNUM},
+    {"==", TK_EQ},     // equal
+    {"!=", TK_NE},     {"<=", TK_ST},         {">=", TK_BT},
+    {"&&", TK_AND},    {"0x[0-9]+", TK_XNUM}, {"[0-9]+", TK_DNUM},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -66,6 +70,7 @@ static regex_t re[NR_REGEX] = {};
 /* Rules are used for many times.
  * Therefore we compile them only once before any usage.
  */
+
 void init_regex() {
     int i;
     char error_msg[128];
@@ -89,6 +94,25 @@ typedef struct token {
 static Token tokens[1024]
     __attribute__((used)) = {}; //__attribute__ do not clear it even if not used
 static int nr_token __attribute__((used)) = 0;
+
+/*those are indivial values*/
+static int oppo_f_type[] = {'+',   '-',   '*',   '/',   '(',
+                            TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
+
+static int op_1th[] = {'*', '/'};
+static int op_2th[] = {'+', '-'};
+static int op_3th[] = {TK_ST, TK_BT};
+static int op_4th[] = {TK_EQ, TK_NE};
+static int op_5th[] = {TK_AND};
+
+static int ambi_type[] = {'-', '*'}; // change calc
+
+bool is_type(int type, int *type_list, uint32_t size) {
+    for (int i = 0; i < size; i++) {
+        if (type == type_list[i]) return true;
+    }
+    return false;
+}
 
 static bool make_token(char *e) {
     int position = 0;
@@ -151,72 +175,106 @@ static bool make_token(char *e) {
 bool check_parentheses(uint32_t p, uint32_t q) {
     if (tokens[p].type != '(' || tokens[q].type != ')') return false;
     int i, balance = 0;
-    
+
     for (i = p; i < q; i++) {
-        if(tokens[i].type == '(') balance++;
+        if (tokens[i].type == '(') balance++;
         else if (tokens[i].type == ')') balance--;
-        if(balance == 0) return false;
+        if (balance == 0) return false;
     }
 
     return true;
 }
 
-int main_sign(int p, int q, char a, char b) {
+int eval(uint32_t p, uint32_t q);
 
-    int i, j, parent_count;
+int main_sign(int p, int q, int *op_list, int size) {
+
+    int i, j, pos, parent_count;
     for (i = q; i >= p; i--) {
-        if (tokens[i].type == a || tokens[i].type == b) {
-            parent_count = 0;
-            for (j = q; j > i; j--) {
-                if (tokens[j].type == '(') parent_count++;
-                if (tokens[j].type == ')') parent_count--;
+        for (pos = 0; pos < size; pos++) {
+            if (tokens[i].type == op_list[pos]) {
+                if (is_type(tokens[i].type, ambi_type,
+                            sizeof(ambi_type) / sizeof(int)) == true) {
+                    if (i == p || is_type(tokens[i - 1].type, oppo_f_type,
+                                          sizeof(oppo_f_type) / sizeof(int))) {
+                        continue;
+                    }
+                }
+
+                parent_count = 0;
+                for (j = q; j > i; j--) {
+                    if (tokens[j].type == '(') parent_count++;
+                    if (tokens[j].type == ')') parent_count--;
+                }
+                if (parent_count == 0) return i;
             }
-            if (parent_count == 0) return i;
         }
     }
     return 0;
 }
 
+// static int nums[] = {TK_XNUM, TK_DNUM};
+
+static int eval_op_eval(uint32_t p, uint32_t q) {
+    uint32_t op;
+    op = main_sign(p, q, op_5th,
+                   sizeof(op_5th) / sizeof(int)); // 运算具有优先级顺序
+    if (op == 0) op = main_sign(p, q, op_4th, sizeof(op_4th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_3th, sizeof(op_3th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_2th, sizeof(op_2th) / sizeof(int));
+    if (op == 0) op = main_sign(p, q, op_1th, sizeof(op_1th) / sizeof(int));
+
+    Assert(op != 0, "Invalid expr");
+
+    int val1 = eval(p, op - 1);
+    int val2 = eval(op + 1, q);
+
+    switch (tokens[op].type) {
+    case '+':
+        return val1 + val2;
+    case '-':
+        return val1 - val2;
+    case '*':
+        return val1 * val2;
+    case '/':
+        Assert(val2 != 0, "0 can't be div");
+        return val1 / val2;
+    case TK_EQ:
+        return val1 == val2 ? 1 : 0;
+    case TK_NE:
+        return val1 != val2 ? 1 : 0;
+    case TK_ST:
+        return val1 <= val2 ? 1 : 0;
+    case TK_BT:
+        return val1 >= val2 ? 1 : 0;
+    case TK_AND:
+        return val1 && val2 ? 1 : 0;
+    default:
+        panic("Cannot recognise the opsign");
+    }
+}
+
 int eval(uint32_t p, uint32_t q) {
-    if (p > q) {
-        /* Bad expression */
+    if (p > q) { /* Bad expression */
         panic("Error occured in evaluate");
-    } else if (p == q) {
-        /* Single token.
-         * For now this token should be a number.
-         * Return the value of the number.
-         */
-        // printf("%d\n", atoi(tokens[p].str));
+    } else if (p == q) { /* Single token.
+                          * For now this token should be a number.
+                          * Return the value of the number.
+                          */
         return atoi(tokens[p].str);
+
     } else if (check_parentheses(p, q) == true) {
         /* The expression is surrounded by a matched pair of parentheses.
          * If that is the case, just throw away the parentheses.
          */
         return eval(p + 1, q - 1);
-    } else {
-        uint32_t op;
-        op = main_sign(p, q, '+', '-');
-        if (op == 0)
-            op = main_sign(p, q, '*', '/'); // 后加减先乘除，若有加减则会覆盖
-        Assert(op != 0, "Invalid expr");
-
-        int val1 = eval(p, op - 1);
-        int val2 = eval(op + 1, q);
-
-        switch (tokens[op].type) {
-        case '+':
-            return val1 + val2;
-        case '-':
-            return val1 - val2;
-        case '*':
-            return val1 * val2;
-        case '/':
-            Assert(val2 != 0, "0 can't be div");
-            return val1 / val2;
-        default:
-            panic("Cannot recognise the opsign");
+    } else if (is_type(tokens[p].type, ambi_type,
+                       sizeof(ambi_type) / sizeof(int))) {
+        if (q - p == 1 || check_parentheses(p + 1, q)) {
+            return -eval(p + 1, q);
         }
     }
+    return eval_op_eval(p, q);
 }
 
 word_t expr(char *e, bool *success) {
