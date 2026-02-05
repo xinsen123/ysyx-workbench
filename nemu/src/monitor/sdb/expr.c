@@ -268,7 +268,7 @@ int eval(uint32_t p, uint32_t q) {
         case TK_DNUM:
             return (uint32_t)strtol(tokens[p].str, &endptr, 10);
         case TK_XNUM:
-            return (uint32_t)strtol(tokens[p].str + 2, &endptr, 16);
+            return (uint32_t)strtol(tokens[p].str, &endptr, 16);
         }
 
     } else if (check_parentheses(p, q) == true) {
