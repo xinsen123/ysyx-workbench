@@ -112,7 +112,7 @@ static int cmd_x(char *args) {
     word_t addr_end = addr + len;
     for (; addr < addr_end; addr++) {
         if (addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
-        if (addr % 4 == 0) printf("%#010x: ", addr);
+        if (addr % 4 == 0) printf("%#010x: ", addr >> 2);
         word_t word = vaddr_read(addr, 1);
         printf("%02x ", word);
     }
@@ -134,7 +134,7 @@ static int cmd_testexpr(char *args) {
     char buf[4096];
     bool success = 0;
     char *expa;
-    int infer, result, count=1;
+    int infer, result, count = 1;
 
     while (fgets(buf, 4096, input)) {
         printf("------------------------------------------\n");
@@ -143,7 +143,7 @@ static int cmd_testexpr(char *args) {
         expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
         infer = atoi(buf);
         result = expr(expa, &success);
-        
+
         printf("expr: %s result: %d\n", expa, result);
         if (infer != result) panic("Error result in calculate"); // 结果检查
         count++;
