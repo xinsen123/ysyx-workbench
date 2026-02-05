@@ -52,7 +52,7 @@ void new_wp(char *name, uint32_t addr) {
     free_ = free_->next;
 
     new->next = head;
-    head->next = NULL;
+    if (head != NULL) head->next = NULL;
     head = new;
 
     strcpy(head->name, name);
