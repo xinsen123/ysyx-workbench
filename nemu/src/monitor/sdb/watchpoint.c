@@ -48,15 +48,20 @@ void init_wp_pool() {
 }
 void new_wp(char *name, uint32_t addr) {
     Assert(free_ != NULL, "free pool is full");
-    WP *new = free_;
+    WP *new = head;
+    if (new != NULL) new = free_;
+    else {
+        while (new->next != NULL)
+            new = new->next;
+        new->next = free_;
+        new = new->next;
+    }
+
     free_ = free_->next;
+    new->next=NULL;
 
-    new->next = head;
-    if (head != NULL) head->next = NULL;
-    head = new;
-
-    strcpy(head->name, name);
-    head->addr = addr;
+    strcpy(new->name, name);
+    new->addr = addr;
     return;
 };
 void free_wp(WP *wp);
