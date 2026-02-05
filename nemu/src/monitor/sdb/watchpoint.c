@@ -64,7 +64,8 @@ void free_wp(WP *wp);
 void show_wp() {
     WP *now = head;
     while (now != NULL) {
-        printf("%-8d: 0x%8x", now->NO, now->addr);
+        printf("%-8d: 0x%8x\n", now->NO, now->addr);
+        now = now->next;
     }
 }
 /* TODO: Implement the functionality of watchpoint */
