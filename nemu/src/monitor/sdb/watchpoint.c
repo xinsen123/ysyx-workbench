@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define NR_WP 32
 
@@ -25,6 +26,7 @@ typedef struct watchpoint {
     int NO;
     struct watchpoint *next;
     uint32_t num;
+    char name[32];
     uint32_t addr;
 
     /* TODO: Add more members if necessary */
@@ -44,19 +46,25 @@ void init_wp_pool() {
     head = NULL;
     free_ = wp_pool;
 }
-WP* new_wp(){
-    Assert(free_!=NULL, "free pool is full");
+void new_wp(char *name, uint32_t addr) {
+    Assert(free_ != NULL, "free pool is full");
     WP *new = free_;
     free_ = free_->next;
-    new->next = NULL;
-    return new;
+
+    new->next = head;
+    head->next = NULL;
+    head = new;
+
+    strcpy(head->name, name);
+    head->addr = addr;
+    return;
 };
 void free_wp(WP *wp);
 
-void show_wp(){
+void show_wp() {
     WP *now = head;
-    while (now!=NULL) {
-        printf("%40d: 0x%x", now->NO, now->addr);
+    while (now != NULL) {
+        printf("%-8d: 0x%8x", now->NO, now->addr);
     }
 }
 /* TODO: Implement the functionality of watchpoint */

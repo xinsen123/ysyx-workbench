@@ -86,8 +86,7 @@ static int cmd_info(char *args) {
     if (is_args_null(args)) return 0;
     if (strcmp(arg1, "r") == 0) {
         isa_reg_display();
-    }else if (strcmp(arg1, "w") == 0) {
-        
+    } else if (strcmp(arg1, "w") == 0) {
     }
     return 0;
 };
@@ -152,6 +151,13 @@ static int cmd_testexpr(char *args) {
     return 0;
 }
 
+static int cmd_w(char *args) {
+    char *name = strtok(NULL, " ");
+    int addr = expr(args + sizeof(name) + 1, 0);
+    new_wp(name, addr);
+    return 0;
+}
+
 static struct {
     const char *name;
     const char *description;
@@ -164,7 +170,8 @@ static struct {
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
-    {"te", "Test the expr runs", cmd_testexpr}
+    {"te", "Test the expr runs", cmd_testexpr},
+    {"w", "Add watchpoints", cmd_w},
     /* TODO: Add more commands */
 
 };
