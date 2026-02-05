@@ -86,6 +86,8 @@ static int cmd_info(char *args) {
     if (is_args_null(args)) return 0;
     if (strcmp(arg1, "r") == 0) {
         isa_reg_display();
+    }else if (strcmp(arg1, "w") == 0) {
+        
     }
     return 0;
 };
@@ -119,8 +121,11 @@ static int cmd_x(char *args) {
 
 static int cmd_p(char *args) {
     bool success = 0;
-
-    printf("result: %d\n", expr(args, &success));
+    int result = expr(args, &success);
+    if (success == false) {
+        printf("error occured in calculate");
+        return 0;
+    } else printf("result: %d\n", result);
     return 0;
 }
 
