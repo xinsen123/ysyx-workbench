@@ -62,7 +62,7 @@ static struct rule {
     {"\\)", ')'},      // )
     {"==", TK_EQ},     // equal
     {"!=", TK_NE},       {"<=", TK_ST},          {">=", TK_BT},
-    {"&&", TK_AND},      {"$[a-z0-9]+", TK_REG}, {"0x[0-9a-zA-Z]+", TK_XNUM},
+    {"&&", TK_AND},      {"$[0-9a-z]+", TK_REG}, {"0x[0-9a-zA-Z]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
 
