@@ -282,7 +282,7 @@ int eval(uint32_t p, uint32_t q) {
             case '-':
                 return -eval(p + 1, q);
             case '*':
-                return paddr_read(eval(p + 1, q) >> 2, sizeof(uint32_t));
+                return paddr_read(eval(p + 1, q) & ~0x3, sizeof(uint32_t));
             }
         }
     }
