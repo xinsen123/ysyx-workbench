@@ -187,10 +187,9 @@ bool check_parentheses(uint32_t p, uint32_t q) {
 
 int eval(uint32_t p, uint32_t q);
 
-int main_sign(int p, int q, int *op_list) {
+int main_sign(int p, int q, int *op_list, int size) {
 
     int i, j, pos, parent_count;
-    int size = sizeof(&op_list);
     for (i = q; i >= p; i--) {
         for (pos = 0; pos < size; pos++) {
             if (tokens[i].type == op_list[pos]) {
@@ -218,11 +217,11 @@ int main_sign(int p, int q, int *op_list) {
 
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
-    op = main_sign(p, q, op_5th); // 运算具有优先级顺序
-    if (op == 0) op = main_sign(p, q, op_4th);
-    if (op == 0) op = main_sign(p, q, op_3th);
-    if (op == 0) op = main_sign(p, q, op_2th);
-    if (op == 0) op = main_sign(p, q, op_1th);
+    op = main_sign(p, q, op_5th, sizeof(op_5th)); // 运算具有优先级顺序
+    if (op == 0) op = main_sign(p, q, op_4th, sizeof(op_4th));
+    if (op == 0) op = main_sign(p, q, op_3th, sizeof(op_3th));
+    if (op == 0) op = main_sign(p, q, op_2th, sizeof(op_2th));
+    if (op == 0) op = main_sign(p, q, op_1th, sizeof(op_1th));
 
     Assert(op != 0, "Invalid expr");
 
