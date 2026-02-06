@@ -88,6 +88,8 @@ void free_wp(int NO) {
     new->next = head;
     while (new->next != NULL) {
         if (new->next->NO == NO) {
+            if (new->next == head) head = new->next->next;
+
             WP *ret = new->next;
             new->next = new->next->next;
 
