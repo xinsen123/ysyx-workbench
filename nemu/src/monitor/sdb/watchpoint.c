@@ -77,7 +77,7 @@ void new_wp(char *name, uint32_t addr) {
     return;
 };
 void free_wp(int NO) {
-    if (NO <= 0 || NO >= 32) {
+    if (NO < 0 || NO > 31) {
         printf("cannot find wp");
         return;
     }
@@ -100,6 +100,7 @@ void free_wp(int NO) {
             }
             new->next = ret;
         }
+        new = new->next;
     }
 }
 
