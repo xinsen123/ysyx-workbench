@@ -65,29 +65,41 @@ void new_wp(char *name, uint32_t addr) {
     free_ = free_->next;
     new->next = NULL;
 
-    strcpy(new->name, name);
+    strncpy(new->name, name, 32);
     new->addr = addr;
     new->num = vaddr_read(addr, 4);
     return;
 };
 void free_wp(int NO) {
-    if(NO<=0||NO>=32) {
+    if (NO <= 0 || NO >= 32) {
         printf("cannot find wp");
         return;
     }
 
     WP *new = head;
-    Assert(new!=NULL, "wp pool is nothing");
-    while (new->next!=NULL) {
-        if (new->NO == NO) {
-            
+    Assert(new != NULL, "wp work pool is nothing");
+    while (new->next != NULL) {
+        if (new->next->NO == NO) {
+            WP *ret = new->next;
+            new->next = new->next->next;
+
+            ret->next = NULL;
+            strncpy(ret->name, "\0", 32);
+            ret->addr = 0;
+
+            new = free_;
+            Assert(new != NULL, "wp free pool is nothing");
+            while (new->next != NULL) {
+                new = new->next;
+            }
+            new->next = ret;
         }
     }
 }
 
 void show_wp() {
     WP *now = head;
-    printf("%-8s| %-10s\n", "NO", "Address");
+    printf("%-8s| %-10s| %-32s\n", "NO", "Address", "Name");
     while (now != NULL) {
         printf("%-8d| 0x%-8x\n", now->NO, now->addr);
         now = now->next;
