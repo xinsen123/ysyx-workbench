@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -82,8 +83,9 @@ void free_wp(int NO) {
         return;
     }
 
-    WP *new = head;
-    Assert(new != NULL, "wp work pool is nothing");
+    WP *new = malloc(sizeof(WP));
+    WP *rubb = new;
+    new->next = head;
     while (new->next != NULL) {
         if (new->next->NO == NO) {
             WP *ret = new->next;
@@ -99,9 +101,13 @@ void free_wp(int NO) {
                 new = new->next;
             }
             new->next = ret;
+            free(rubb);
+            return;
         }
         new = new->next;
     }
+    free(rubb);
+    return;
 }
 
 void show_wp() {
