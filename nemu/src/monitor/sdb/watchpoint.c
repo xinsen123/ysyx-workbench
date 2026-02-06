@@ -52,7 +52,7 @@ void init_wp_pool() {
 }
 void new_wp(char *name, uint32_t addr) {
     Assert(free_ != NULL, "free pool is full");
-    if (addr >= PMEM_RIGHT || addr <= PMEM_LEFT) {
+    if (addr > PMEM_RIGHT || addr < PMEM_LEFT) {
         printf("addr is out of bound\n");
         return;
     }
