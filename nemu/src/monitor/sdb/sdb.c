@@ -159,6 +159,11 @@ static int cmd_w(char *args) {
     return 0;
 }
 
+static int cmd_d(char *args){
+    free_wp(expr(args+2, 0));
+    return 0;
+}
+
 static struct {
     const char *name;
     const char *description;
@@ -173,6 +178,7 @@ static struct {
     {"p", "Evaluate the expr\'s number", cmd_p},
     {"te", "Test the expr runs", cmd_testexpr},
     {"w", "Add watchpoints", cmd_w},
+    {"d", "Delete NO watchpoint", cmd_d},
     /* TODO: Add more commands */
 
 };
