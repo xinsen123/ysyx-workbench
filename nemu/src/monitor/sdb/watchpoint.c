@@ -16,6 +16,7 @@
 #include "debug.h"
 #include "memory/paddr.h"
 #include "sdb.h"
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -122,3 +123,19 @@ void show_wp() {
     }
 }
 /* TODO: Implement the functionality of watchpoint */
+
+void is_wp_update(bool *success) {
+    if (head == NULL) {
+        *success = false;
+        return;
+    }
+    WP *new = head;
+    while (new->next != NULL) {
+        int no_num = paddr_read(new->addr & ~0x3, 4);
+        if (new->num != no_num) {
+            printf("watchpoint updated: %d 0x%x %s: %x -> %x", new->NO,
+                   new->addr, new->name, new->num, no_num);
+            *success = true;
+        }
+    }
+}
