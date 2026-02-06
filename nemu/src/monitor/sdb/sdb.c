@@ -86,6 +86,8 @@ static int cmd_info(char *args) {
     if (is_args_null(args)) return 0;
     if (strcmp(arg1, "r") == 0) {
         isa_reg_display();
+    } else if (strcmp(arg1, "w") == 0) {
+        show_wp();
     }
     return 0;
 };
@@ -119,8 +121,11 @@ static int cmd_x(char *args) {
 
 static int cmd_p(char *args) {
     bool success = 0;
-
-    printf("result: %d\n", expr(args, &success));
+    int result = expr(args, &success);
+    if (success == false) {
+        printf("error occured in calculate\n");
+        return 0;
+    } else printf("result: %d\n", result);
     return 0;
 }
 
@@ -147,6 +152,21 @@ static int cmd_testexpr(char *args) {
     return 0;
 }
 
+static int cmd_w(char *args) {
+    char *name = strtok(NULL, " ");
+    bool sc;
+    int addr = expr(args + strlen(name) + 1, &sc);
+    new_wp(name, addr);
+    return 0;
+}
+
+static int cmd_d(char *args) {
+    char *cNO = strtok(NULL, " ");
+    int NO = strtol(cNO, NULL, 10);
+    free_wp(NO);
+    return 0;
+}
+
 static struct {
     const char *name;
     const char *description;
@@ -159,7 +179,9 @@ static struct {
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
-    {"te", "Test the expr runs", cmd_testexpr}
+    {"te", "Test the expr runs", cmd_testexpr},
+    {"w", "Add watchpoints", cmd_w},
+    {"d", "Delete NO watchpoint", cmd_d},
     /* TODO: Add more commands */
 
 };

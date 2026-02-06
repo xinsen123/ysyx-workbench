@@ -257,7 +257,7 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
 
 int eval(uint32_t p, uint32_t q) {
     if (p > q) { /* Bad expression */
-        panic("Error occured in evaluate");
+        panic("Error occured in evaluate\n");
     } else if (p == q) { /* Single token.
                           * For now this token should be a number.
                           * Return the value of the number.
@@ -297,6 +297,6 @@ word_t expr(char *e, bool *success) {
     }
 
     /* TODO: Insert codes to evaluate the expression. */
-
+    *success = true;
     return eval(0, nr_token - 1);
 }
