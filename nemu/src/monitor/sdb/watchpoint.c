@@ -105,9 +105,9 @@ void free_wp(int NO) {
 
 void show_wp() {
     WP *now = head;
-    printf("%-8s| %-10s| %-8s| %-32s\n", "NO", "Address", "Num", "Name");
+    printf("%-8s| %-10s| %-12s| %-32s\n", "NO", "Address", "Num", "Name");
     while (now != NULL) {
-        printf("%-8d| 0x%-8x| %u| %32s\n", now->NO, now->addr, now->num,
+        printf("%-8d| 0x%-8x| %-12u| %-32s\n", now->NO, now->addr, now->num,
                now->name);
         now = now->next;
     }
