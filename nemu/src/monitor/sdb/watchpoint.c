@@ -73,7 +73,7 @@ void new_wp(char *name, uint32_t addr) {
 
     strncpy(new->name, name, 32);
     new->addr = addr;
-    new->num = vaddr_read(addr, 4);
+    new->num = vaddr_read(addr & ~0x3, 4);
     return;
 };
 void free_wp(int NO) {
