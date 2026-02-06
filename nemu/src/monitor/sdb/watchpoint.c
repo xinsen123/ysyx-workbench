@@ -19,8 +19,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define NR_WP 32
+
+word_t vaddr_read(vaddr_t addr, int len);
 
 typedef struct watchpoint {
     int NO;
@@ -64,9 +67,23 @@ void new_wp(char *name, uint32_t addr) {
 
     strcpy(new->name, name);
     new->addr = addr;
+    new->num = vaddr_read(addr, 4);
     return;
 };
-void free_wp(WP *wp);
+void free_wp(int NO) {
+    if(NO<=0||NO>=32) {
+        printf("cannot find wp");
+        return;
+    }
+
+    WP *new = head;
+    Assert(new!=NULL, "wp pool is nothing");
+    while (new->next!=NULL) {
+        if (new->NO == NO) {
+            
+        }
+    }
+}
 
 void show_wp() {
     WP *now = head;
