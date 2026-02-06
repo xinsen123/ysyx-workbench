@@ -154,13 +154,16 @@ static int cmd_testexpr(char *args) {
 
 static int cmd_w(char *args) {
     char *name = strtok(NULL, " ");
-    int addr = expr(args + strlen(name) + 1, 0);
+    bool sc;
+    int addr = expr(args + strlen(name) + 1, &sc);
     new_wp(name, addr);
     return 0;
 }
 
-static int cmd_d(char *args){
-    free_wp(expr(args+2, 0));
+static int cmd_d(char *args) {
+    char *cNO = strtok(NULL, " ");
+    int NO = strtol(cNO, NULL, 10);
+    free_wp(NO);
     return 0;
 }
 
