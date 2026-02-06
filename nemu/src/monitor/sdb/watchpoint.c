@@ -137,5 +137,6 @@ void is_wp_update(bool *success) {
                    new->addr, new->name, new->num, no_num);
             *success = true;
         }
+        new = new->next;
     }
 }
