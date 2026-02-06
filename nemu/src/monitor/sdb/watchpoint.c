@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "debug.h"
+#include "memory/paddr.h"
 #include "sdb.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -51,6 +52,11 @@ void init_wp_pool() {
 }
 void new_wp(char *name, uint32_t addr) {
     Assert(free_ != NULL, "free pool is full");
+    if (addr >= PMEM_RIGHT || addr <= PMEM_LEFT) {
+        printf("addr is out of bound\n");
+        return;
+    }
+
     WP *new = head;
     if (new == NULL) {
         new = free_;
