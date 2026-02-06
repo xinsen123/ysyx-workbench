@@ -70,7 +70,7 @@ void free_wp(WP *wp);
 
 void show_wp() {
     WP *now = head;
-    printf("%-8s  %-10s\n", "NO", "Address");
+    printf("%-8s| %-10s\n", "NO", "Address");
     while (now != NULL) {
         printf("%-8d| 0x%-8x\n", now->NO, now->addr);
         now = now->next;
