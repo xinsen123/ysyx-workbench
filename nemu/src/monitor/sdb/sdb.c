@@ -123,7 +123,7 @@ static int cmd_p(char *args) {
     bool success = 0;
     int result = expr(args, &success);
     if (success == false) {
-        printf("error occured in calculate");
+        printf("error occured in calculate\n");
         return 0;
     } else printf("result: %d\n", result);
     return 0;
