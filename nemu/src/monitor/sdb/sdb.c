@@ -153,10 +153,7 @@ static int cmd_testexpr(char *args) {
 }
 
 static int cmd_w(char *args) {
-    char *name = strtok(NULL, " ");
-    bool sc;
-    int addr = expr(args + strlen(name) + 1, &sc);
-    new_wp(name, addr);
+    new_wp(args);
     return 0;
 }
 

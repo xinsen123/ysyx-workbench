@@ -19,7 +19,7 @@
 #include <common.h>
 
 word_t expr(char *e, bool *success);
-void new_wp(char *name, uint32_t addr);
+void new_wp(char *args);
 void is_wp_update(bool *success);
 void free_wp(int NO);
 void show_wp();
