@@ -156,14 +156,14 @@ void is_wp_update(bool *success) {
             bool sc;
             uint32_t no_num = isa_reg_str2val(new->name, &sc);
             if (no_num != new->num) {
-                printf("watchpoint updated: %d %s: %x -> %x", new->NO,
+                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
                        new->name, new->num, no_num);
                 *success = true;
             }
         } else if (new->type == TYPE_ADDR) {
             uint32_t no_num = paddr_read(atoi(new->name) & ~0x3, 4);
             if (new->num != no_num) {
-                printf("watchpoint updated: %d %s: %x -> %x", new->NO,
+                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
                        new->name, new->num, no_num);
                 *success = true;
             }
