@@ -16,6 +16,7 @@
 #include "local-include/reg.h"
 #include "debug.h"
 #include <isa.h>
+#include <stdbool.h>
 #include <string.h>
 
 const char *regs[] = {"$0", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
@@ -28,8 +29,8 @@ int reglen = ARRLEN(regs);
 void isa_reg_display() {
     int i = 0;
     for (; i < reglen; i++) {
-        printf("%4s: %#04x, ", regs[i], *regs[i]);
-        if (i % 8 == 7) printf("\n");
+        printf("%4s: 0x%08x, ", regs[i], gpr(i));
+        if (i % 4 == 3) printf("\n");
     }
     return;
 }
@@ -37,8 +38,10 @@ void isa_reg_display() {
 word_t isa_reg_str2val(const char *s, bool *success) {
     for (int i = 0; i < reglen; i++) {
         if (strcmp(s, regs[i]) == 0) {
-            return *regs[i];
+            *success = true;
+            return gpr(i);
         }
     }
-    panic("Unknown register!");
+    *success = false;
+    return 0;
 }
