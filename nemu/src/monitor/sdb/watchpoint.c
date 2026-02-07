@@ -94,7 +94,7 @@ void new_wp(char *args) {
         return;
     }
 
-    snprintf(new->name, 32, "0x%x", addr);
+    snprintf(new->name, 32, "%u", addr);
     new->num = vaddr_read(addr & ~0x3, 4);
     new->type = TYPE_ADDR;
     return;
@@ -152,11 +152,21 @@ void is_wp_update(bool *success) {
     }
     WP *new = head;
     while (new->next != NULL) {
-        uint32_t no_num = paddr_read(atoi(new->name) & ~0x3, 4);
-        if (new->num != no_num) {
-            printf("watchpoint updated: %d %s: %x -> %x", new->NO, new->name,
-                   new->num, no_num);
-            *success = true;
+        if (new->type == TYPE_REG) {
+            bool sc;
+            uint32_t no_num = isa_reg_str2val(new->name, &sc);
+            if (no_num != new->num) {
+                printf("watchpoint updated: %d %s: %x -> %x", new->NO,
+                       new->name, new->num, no_num);
+                *success = true;
+            }
+        } else if (new->type == TYPE_ADDR) {
+            uint32_t no_num = paddr_read(atoi(new->name) & ~0x3, 4);
+            if (new->num != no_num) {
+                printf("watchpoint updated: %d %s: %x -> %x", new->NO,
+                       new->name, new->num, no_num);
+                *success = true;
+            }
         }
         new = new->next;
     }
