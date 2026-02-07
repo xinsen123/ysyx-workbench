@@ -151,7 +151,7 @@ void is_wp_update(bool *success) {
         return;
     }
     WP *new = head;
-    while (new->next != NULL) {
+    while (new != NULL) {
         if (new->type == TYPE_REG) {
             bool sc;
             uint32_t no_num = isa_reg_str2val(new->name, &sc);
