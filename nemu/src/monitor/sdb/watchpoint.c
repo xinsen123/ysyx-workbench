@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "debug.h"
+#include "isa.h"
 #include "memory/paddr.h"
 #include "sdb.h"
 #include <locale.h>
@@ -28,12 +29,17 @@
 
 word_t vaddr_read(vaddr_t addr, int len);
 
+enum {
+    TYPE_REG = 65536,
+    TYPE_ADDR,
+};
+
 typedef struct watchpoint {
     int NO;
     struct watchpoint *next;
     uint32_t num;
     char name[32];
-    uint32_t addr;
+    uint32_t type;
 
     /* TODO: Add more members if necessary */
 
@@ -52,12 +58,8 @@ void init_wp_pool() {
     head = NULL;
     free_ = wp_pool;
 }
-void new_wp(char *name, uint32_t addr) {
+void new_wp(char *args) {
     Assert(free_ != NULL, "free pool is full");
-    if (addr > PMEM_RIGHT || addr < PMEM_LEFT) {
-        printf("addr is out of bound\n");
-        return;
-    }
 
     WP *new = head;
     if (new == NULL) {
@@ -70,12 +72,31 @@ void new_wp(char *name, uint32_t addr) {
         new = new->next;
     }
 
+    bool success = false;
+    int num = isa_reg_str2val(args, &success);
     free_ = free_->next;
     new->next = NULL;
 
-    strncpy(new->name, name, 32);
-    new->addr = addr;
+    if (success) {
+        strncpy(new->name, args, 32);
+        new->num = num;
+        new->type = TYPE_REG;
+        return;
+    }
+
+    uint32_t addr = expr(args, &success);
+    if (!success) {
+        printf("invaild arguments\n");
+        return;
+    }
+    if (addr > PMEM_RIGHT || addr < PMEM_LEFT) {
+        printf("addr is out of bound\n");
+        return;
+    }
+
+    snprintf(new->name, 32, "%u", addr);
     new->num = vaddr_read(addr & ~0x3, 4);
+    new->type = TYPE_ADDR;
     return;
 };
 void free_wp(int NO) {
@@ -96,7 +117,8 @@ void free_wp(int NO) {
 
             ret->next = NULL;
             strncpy(ret->name, "\0", 32);
-            ret->addr = 0;
+            ret->num = 0;
+            ret->type = 0;
 
             new = free_;
             Assert(new != NULL, "wp free pool is nothing");
@@ -115,10 +137,9 @@ void free_wp(int NO) {
 
 void show_wp() {
     WP *now = head;
-    printf("%-8s| %-10s| %-12s| %-32s\n", "NO", "Address", "Num", "Name");
+    printf("%-8s| %-10s| %-32s\n", "NO", "Num", "Name");
     while (now != NULL) {
-        printf("%-8d| 0x%-8x| %-12u| %-32s\n", now->NO, now->addr, now->num,
-               now->name);
+        printf("%-8d| 0x%-8x| %-32s\n", now->NO, now->num, now->name);
         now = now->next;
     }
 }
@@ -130,12 +151,22 @@ void is_wp_update(bool *success) {
         return;
     }
     WP *new = head;
-    while (new->next != NULL) {
-        int no_num = paddr_read(new->addr & ~0x3, 4);
-        if (new->num != no_num) {
-            printf("watchpoint updated: %d 0x%x %s: %x -> %x", new->NO,
-                   new->addr, new->name, new->num, no_num);
-            *success = true;
+    while (new != NULL) {
+        if (new->type == TYPE_REG) {
+            bool sc;
+            uint32_t no_num = isa_reg_str2val(new->name, &sc);
+            if (no_num != new->num) {
+                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
+                       new->name, new->num, no_num);
+                *success = true;
+            }
+        } else if (new->type == TYPE_ADDR) {
+            uint32_t no_num = paddr_read(atoi(new->name) & ~0x3, 4);
+            if (new->num != no_num) {
+                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
+                       new->name, new->num, no_num);
+                *success = true;
+            }
         }
         new = new->next;
     }
