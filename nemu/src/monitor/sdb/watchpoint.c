@@ -127,7 +127,8 @@ void is_wp_update(bool *success) {
     }
     WP *new = head;
     while (new != NULL) {
-        int no_num = expr(new->name, 0);
+        bool sc;
+        int no_num = expr(new->name, &sc);
         if (new->num != no_num) {
             printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
                        new->name, new->num, no_num);
