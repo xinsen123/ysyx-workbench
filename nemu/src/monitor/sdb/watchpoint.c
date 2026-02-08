@@ -139,5 +139,5 @@ void is_wp_update(bool *success) {
         }
         new = new->next;
     }
-    *success = false;
+    return;
 }
