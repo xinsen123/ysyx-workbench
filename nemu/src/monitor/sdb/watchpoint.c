@@ -29,17 +29,11 @@
 
 word_t vaddr_read(vaddr_t addr, int len);
 
-enum {
-    TYPE_REG = 65536,
-    TYPE_ADDR,
-};
-
 typedef struct watchpoint {
     int NO;
     struct watchpoint *next;
     uint32_t num;
     char name[32];
-    uint32_t type;
 
     /* TODO: Add more members if necessary */
 
@@ -72,32 +66,13 @@ void new_wp(char *args) {
         new = new->next;
     }
 
-    bool success = false;
-    int num = isa_reg_str2val(args, &success);
-    free_ = free_->next;
-    new->next = NULL;
-
-    if (success) {
-        strncpy(new->name, args, 32);
-        new->num = num;
-        new->type = TYPE_REG;
+    bool sc = false;
+    new->num = expr(args, &sc);
+    if (sc == false) {
+        printf("invaild expr");
         return;
     }
-
-    uint32_t addr = expr(args, &success);
-    if (!success) {
-        printf("invaild arguments\n");
-        return;
-    }
-    if (addr > PMEM_RIGHT || addr < PMEM_LEFT) {
-        printf("addr is out of bound\n");
-        return;
-    }
-
-    snprintf(new->name, 32, "%u", addr);
-    new->num = vaddr_read(addr & ~0x3, 4);
-    new->type = TYPE_ADDR;
-    return;
+    strncpy(new->name, args, 32);
 };
 void free_wp(int NO) {
     if (NO < 0 || NO > 31) {
@@ -118,7 +93,6 @@ void free_wp(int NO) {
             ret->next = NULL;
             strncpy(ret->name, "\0", 32);
             ret->num = 0;
-            ret->type = 0;
 
             new = free_;
             Assert(new != NULL, "wp free pool is nothing");
@@ -152,21 +126,10 @@ void is_wp_update(bool *success) {
     }
     WP *new = head;
     while (new != NULL) {
-        if (new->type == TYPE_REG) {
-            bool sc;
-            uint32_t no_num = isa_reg_str2val(new->name, &sc);
-            if (no_num != new->num) {
-                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
+        int no_num = expr(new->name, 0);
+        if (new->num != no_num) {
+            printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
                        new->name, new->num, no_num);
-                *success = true;
-            }
-        } else if (new->type == TYPE_ADDR) {
-            uint32_t no_num = paddr_read(atoi(new->name) & ~0x3, 4);
-            if (new->num != no_num) {
-                printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
-                       new->name, new->num, no_num);
-                *success = true;
-            }
         }
         new = new->next;
     }
