@@ -61,8 +61,12 @@ static struct rule {
     {"\\(", '('},      // (
     {"\\)", ')'},      // )
     {"==", TK_EQ},     // equal
-    {"!=", TK_NE},       {"<=", TK_ST},          {">=", TK_BT},
-    {"&&", TK_AND},      {"\\$[\\$0-9a-z]+", TK_REG}, {"0x[0-9a-zA-Z]+", TK_XNUM},
+    {"!=", TK_NE},
+    {"<=", TK_ST},
+    {">=", TK_BT},
+    {"&&", TK_AND},
+    {"\\$[\\$0-9a-z]+", TK_REG},
+    {"0x[0-9a-zA-Z]+", TK_XNUM},
     {"[0-9]+", TK_DNUM},
 };
 
@@ -269,7 +273,8 @@ int eval(uint32_t p, uint32_t q) {
         case TK_XNUM:
             return (uint32_t)strtol(tokens[p].str, &endptr, 16);
         case TK_REG:
-            return isa_reg_str2val(tokens[p].str + 1, 0);
+            bool sc;
+            return isa_reg_str2val(tokens[p].str + 1, &sc);
         }
 
     } else if (check_parentheses(p, q) == true) {
