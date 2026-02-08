@@ -65,8 +65,10 @@ void new_wp(char *args) {
         new->next = free_;
         new = new->next;
     }
-    new->next = NULL;
 
+    free_=free_->next;
+
+    new->next = NULL;
     bool sc = false;
     new->num = expr(args, &sc);
     if (sc == false) {
@@ -130,8 +132,8 @@ void is_wp_update(bool *success) {
         bool sc;
         int no_num = expr(new->name, &sc);
         if (new->num != no_num) {
-            printf("watchpoint updated: %d %s: %x -> %x\n", new->NO,
-                       new->name, new->num, no_num);
+            printf("watchpoint updated: %d %s: %x -> %x\n", new->NO, new->name,
+                   new->num, no_num);
         }
         new = new->next;
     }
