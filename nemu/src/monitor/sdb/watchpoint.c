@@ -135,6 +135,7 @@ void is_wp_update(bool *success) {
             *success = true;
             printf("watchpoint updated: %d %s: %x -> %x\n", new->NO, new->name,
                    new->num, no_num);
+            new->num = no_num;
         }
         new = new->next;
     }
