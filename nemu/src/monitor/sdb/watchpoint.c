@@ -65,6 +65,7 @@ void new_wp(char *args) {
         new->next = free_;
         new = new->next;
     }
+    new->next = NULL;
 
     bool sc = false;
     new->num = expr(args, &sc);
