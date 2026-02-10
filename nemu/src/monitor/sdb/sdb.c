@@ -75,8 +75,9 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
-    if (is_args_null(args)) return 0;
-    int num = atoi(strtok(NULL, " "));
+    int num;
+    if (is_args_null(args)) num = 1;
+    else num = atoi(strtok(NULL, " "));
     cpu_exec(num > 0 ? num : 1);
     return 0;
 };
