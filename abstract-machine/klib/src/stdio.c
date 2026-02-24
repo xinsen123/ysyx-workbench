@@ -46,7 +46,7 @@ int sprintf(char *out, const char *fmt, ...) {
                 *(out + count) = '%';
                 break;
             }
-            buf++;
+            buf+=2;
         } else {
             *(out + count) = *buf;
             count++;
