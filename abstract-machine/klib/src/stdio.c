@@ -9,7 +9,7 @@ static void itoa(int num, char *dst, int *count) {
     if (num != 0)
         itoa(num / 10, dst + 1, count);
     *dst = (num % 10) + '0';
-    count++;
+    (*count)++;
 }
 
 int printf(const char *fmt, ...) {
@@ -46,7 +46,7 @@ int sprintf(char *out, const char *fmt, ...) {
                 *(out + count) = '%';
                 break;
             }
-            buf+=2;
+            buf ++;
         } else {
             *(out + count) = *buf;
             count++;
