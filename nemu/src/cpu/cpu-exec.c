@@ -50,7 +50,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     bool success = false;
     is_wp_update(&success);
     if (success == true) {
-        nemu_state.state = NEMU_QUIT;
+        nemu_state.state = NEMU_STOP;
     }
 #endif
 }
