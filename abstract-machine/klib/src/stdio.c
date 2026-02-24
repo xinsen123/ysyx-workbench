@@ -6,10 +6,28 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 static void itoa(int num, char *dst, int *count) {
-    if (num != 0)
-        itoa(num / 10, dst + 1, count);
-    *dst = (num % 10) + '0';
-    (*count)++;
+    // 处理 0 的特殊情况
+    if (num == 0) {
+        dst[(*count)++] = '0';
+        return;
+    }
+    
+    // 处理负数
+    unsigned int unum;
+    if (num < 0) {
+        dst[(*count)++] = '-';
+        unum = (unsigned int)(-(num + 1)) + 1;  // 安全处理 INT_MIN
+    } else {
+        unum = (unsigned int)num;
+    }
+    
+    // 递归处理高位
+    if (unum / 10 != 0) {
+        itoa(unum / 10, dst, count);  // 注意：这里传入的是 unsigned int
+    }
+    
+    // 添加当前位
+    dst[(*count)++] = (unum % 10) + '0';
 }
 
 int printf(const char *fmt, ...) {
@@ -21,7 +39,6 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-    // panic("Not implemented");
     va_list args;
     va_start(args, fmt);
     int count = 0;
@@ -30,29 +47,43 @@ int sprintf(char *out, const char *fmt, ...) {
     const char *buf = fmt;
     while (*buf != '\0') {
         if (*buf == '%') {
-            switch (*(buf + 1)) {
-            case 'd':
-                itoa(va_arg(args, int), out + count, &count);
-                break;
-            case 's':
-                str = va_arg(args, char *);
-                while (*str != '\0') {
-                    *(out + count) = *str;
-                    count++;
-                    str++;
+            buf++;  // 跳过 '%'
+            switch (*buf) {
+                case 'd': {
+                    int num = va_arg(args, int);
+                    itoa(num, out, &count);
+                    buf++;  // 跳过 'd'
+                    break;
                 }
-                break;
-            case '%':
-                *(out + count) = '%';
-                break;
+                case 's': {
+                    str = va_arg(args, char *);
+                    if (str) {
+                        while (*str) {
+                            out[count++] = *str++;
+                        }
+                    }
+                    buf++;  // 跳过 's'
+                    break;
+                }
+                case '%': {
+                    out[count++] = '%';
+                    buf++;  // 跳过第二个 '%'
+                    break;
+                }
+                default:
+                    // 未知格式，原样输出
+                    out[count++] = '%';
+                    out[count++] = *buf;
+                    buf++;
+                    break;
             }
-            buf ++;
         } else {
-            *(out + count) = *buf;
-            count++;
+            out[count++] = *buf++;
         }
-        buf++;
     }
+    
+    out[count] = '\0';  // 添加字符串结束符
+    va_end(args);
     return count;
 }
 
