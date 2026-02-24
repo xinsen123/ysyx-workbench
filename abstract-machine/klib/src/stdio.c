@@ -7,8 +7,8 @@
 
 static void itoa(int num, char *dst, int *count) {
     if (num != 0)
-        itoa(num / 10, dst + *count, count);
-    *(dst + *count) = (num % 10) + '0';
+        itoa(num / 10, dst + 1, count);
+    *dst = (num % 10) + '0';
     count++;
 }
 
@@ -32,7 +32,7 @@ int sprintf(char *out, const char *fmt, ...) {
         if (*buf == '%') {
             switch (*(buf + 1)) {
             case 'd':
-                itoa(va_arg(args, int), out, &count);
+                itoa(va_arg(args, int), out + count, &count);
                 break;
             case 's':
                 str = va_arg(args, char *);
