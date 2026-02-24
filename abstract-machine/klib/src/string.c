@@ -11,7 +11,7 @@ size_t strlen(const char *s) {
 char *strcpy(char *dst, const char *src) {
     // panic("Not implemented");
     int i = 0;
-    while (src[i] != '\0' && dst[i] != '\0') {
+    while (src[i] != '\0') {
         dst[i] = src[i];
         i++;
     }
@@ -41,10 +41,8 @@ char *strcat(char *dst, const char *src) {
 int strcmp(const char *s1, const char *s2) {
     // panic("Not implemented");
     int i = 0, count = 0;
-    while (s1[i] == s2[i] && s1[i] != '\0' && s2[i] != '\0') {
-        count++;
+    while (s1[i] == s2[i] && s1[i] != '\0' && s2[i] != '\0')
         i++;
-    }
     return s1[i] == s2[i] ? 0 : s1[i] - s2[i];
 }
 
@@ -72,12 +70,12 @@ void *memcpy(void *out, const void *in, size_t n) {
 
 int memcmp(const void *s1, const void *s2, size_t n) {
     // panic("Not implemented");
-    const char *p1 = (const char*)s1;
-    const char *p2 = (const char*)s2;
+    const char *p1 = (const char *)s1;
+    const char *p2 = (const char *)s2;
     int i;
     for (i = 0; i < n; i++) {
         if (p1[i] != p2[i])
-            return p1 - p2;
+            return *p1 - *p2;
     }
     return 0;
 }
