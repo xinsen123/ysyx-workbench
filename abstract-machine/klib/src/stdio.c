@@ -43,7 +43,8 @@ int sprintf(char *out, const char *fmt, ...) {
                 }
                 break;
             case '%':
-                *(out + count) = '%'; 
+                *(out + count) = '%';
+                break;
             }
             buf++;
         } else {
