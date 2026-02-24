@@ -36,7 +36,6 @@ char *strcat(char *dst, const char *src) {
     }
     dst[i] = '\0';
     return dst;
-    printf("Used\n");
 }
 
 int strcmp(const char *s1, const char *s2) {
