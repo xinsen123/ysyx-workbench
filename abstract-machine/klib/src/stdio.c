@@ -47,27 +47,23 @@ int sprintf(char *out, const char *fmt, ...) {
     const char *buf = fmt;
     while (*buf != '\0') {
         if (*buf == '%') {
-            buf++; // 跳过 '%'
-            switch (*buf) {
+            switch (*(buf + 1)) {
             case 'd': {
                 int num = va_arg(args, int);
                 itoa(num, out, &count);
-                buf++; // 跳过 'd'
                 break;
             }
             case 's': {
                 str = va_arg(args, char *);
                 if (str) {
-                    while (*str) {
+                    while (*str != '\0') {
                         out[count++] = *str++;
                     }
                 }
-                buf++; // 跳过 's'
                 break;
             }
             case '%': {
                 out[count++] = '%';
-                buf++; // 跳过第二个 '%'
                 break;
             }
             default:
@@ -77,9 +73,11 @@ int sprintf(char *out, const char *fmt, ...) {
                 buf++;
                 break;
             }
+            buf++; // 跳过 '%'
         } else {
-            out[count++] = *buf++;
+            out[count++] = *buf;
         }
+        buf++;
     }
 
     out[count] = '\0'; // 添加字符串结束符
