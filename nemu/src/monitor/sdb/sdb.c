@@ -56,7 +56,6 @@ static char *rl_gets() {
 
 static int is_args_null(char *args) {
     if (args == NULL) {
-        printf("too few arguments to execute\n");
         return 1;
     }
     return 0;
@@ -75,8 +74,9 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
-    if (is_args_null(args)) return 0;
-    int num = atoi(strtok(NULL, " "));
+    int num;
+    if (is_args_null(args)) num = 1;
+    else num = atoi(strtok(NULL, " "));
     cpu_exec(num > 0 ? num : 1);
     return 0;
 };
@@ -172,7 +172,7 @@ static struct {
     {"help", "Display information about all supported commands", cmd_help},
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
-    {"si", "si [N] -> Execute the program N steps", cmd_si},
+    {"s", "si [N] -> Execute the program N steps", cmd_si},
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
