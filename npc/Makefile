@@ -8,10 +8,16 @@ TOPNAME = top
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(OBJ_DIR)/V$(TOPNAME)  # 修正：可执行文件在 obj_dir 中
+ECODE = build/ecoder
+
+SMOD = top
 
 # 创建构建目录
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+$(ECODE):
+	gcc ecoder/ecoder.c -o $(BUILD_DIR)/ecoder
 
 # 主要构建规则
 $(BIN): $(BUILD_DIR) $(VSRC) $(CSRC)
@@ -27,4 +33,12 @@ run: $(BIN)  # 修正：依赖 BIN
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: run clean all test
+show:
+	yosys -p "read_verilog vsrc/top.v; \
+				hierarchy -top $(SMOD); \
+				show $(SMOD);"
+
+ecode:$(ECODE)
+	@$(ECODE)
+
+.PHONY: run clean all show
