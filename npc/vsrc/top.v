@@ -1,13 +1,14 @@
 `include "const.vh"
 
 module top(
-    input reg  [DATA_WIDTH-1:0] inst,
-    output reg [DATA_WIDTH-1:0] pc,
+    input  [DATA_WIDTH-1:0] inst,
+    output [DATA_WIDTH-1:0] cpc,
     input clk,
     input rst
 );
 
     reg [7:0] led;
+    reg [DATA_WIDTH-1:0] pc;
 
     wire [DATA_WIDTH-1 : 0] regin_data[REGIN_LINE], rout_data1, rout_data2;
     wire [DATA_WIDTH-1 : 0] imm_I, imm_U, imm_S;
@@ -15,7 +16,7 @@ module top(
     wire [ADDR_WIDTH-1 : 0] rd, rs1, rs2, reg_waddr;
     
     wire [INST_TYPES-1 : 0] itype;
-    wire wen_reg, wen_mem;
+    wire wen_reg, wen_mem, wen_pc;
     
     RegisterFile #(ADDR_WIDTH, DATA_WIDTH) 
         Rvreg ( .wdata(regin_data[0]), 
@@ -37,16 +38,26 @@ module top(
         .imm_U(imm_U),
         .imm_S(imm_S),
         .wen_reg(wen_reg),
-        .wen_mem(wen_mem)
+        .wen_mem(wen_mem),
+        .wen_pc(wen_pc)
     );
 
-    always @(posedge clk) begin
-        pc++;
+    always @(posedge clk, posedge rst) begin
+        if(rst)begin
+            pc = 0;
+        end
+        else begin 
+            pc <= wen_pc ? pc + 4 : rout_data1 + imm_I;
+        end
+        $display(pc);
     end
+
+    assign cpc = pc;
 
 endmodule
 
-module RegisterFile #(ADDR_WIDTH = 1, DATA_WIDTH = 1) (
+module RegisterFile #(  parameter ADDR_WIDTH = 1, 
+                        parameter DATA_WIDTH = 1) (
     input clk,
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,

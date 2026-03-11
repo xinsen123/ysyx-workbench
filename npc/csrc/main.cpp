@@ -1,14 +1,18 @@
 #include <assert.h>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include "../build/obj_dir/Vtop.h"
+#include "Vtop.h"
+
+Vtop *top = new Vtop;
+
+
 
 int main() {
-    Vtop *top = new Vtop;
 
     time_t last = 0;
     top->pc = 0;
