@@ -10,19 +10,20 @@
 
 Vtop *top = new Vtop;
 
-
+void update() {
+    top->clk = 1;top->eval();
+    top->clk = 0;top->eval();
+}
 
 int main() {
 
     time_t last = 0;
-    top->pc = 0;
 
     while (1) {
         if (time(NULL) - last) {
             last = time(NULL);
-            top->inst = rand();
-            top->clk = 1; top->eval();
-            top->clk = 0; top->eval();
+            top->inst = 0;
+            update();
         }
     }
 }

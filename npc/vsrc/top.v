@@ -47,9 +47,8 @@ module top(
             pc = 0;
         end
         else begin 
-            pc <= wen_pc ? pc + 4 : rout_data1 + imm_I;
+            pc <= wen_pc ? rout_data1 + imm_I : pc + 4;
         end
-        $display(pc);
     end
 
     assign cpc = pc;
