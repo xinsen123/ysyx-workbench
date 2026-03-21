@@ -172,7 +172,7 @@ static struct {
     {"help", "Display information about all supported commands", cmd_help},
     {"c", "Continue the execution of the program", cmd_c},
     {"q", "Exit NEMU", cmd_q},
-    {"s", "si [N] -> Execute the program N steps", cmd_si},
+    {"si", "si [N] -> Execute the program N steps", cmd_si},
     {"info", "Display information. r -> register, w -> monitor", cmd_info},
     {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
     {"p", "Evaluate the expr\'s number", cmd_p},
