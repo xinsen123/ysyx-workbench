@@ -48,6 +48,7 @@ module top(
         end
         else begin 
             pc <= wen_pc ? rout_data1 + imm_I : pc + 4;
+            $display(pc);
         end
     end
 
