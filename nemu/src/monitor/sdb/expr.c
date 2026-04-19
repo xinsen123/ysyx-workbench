@@ -103,7 +103,7 @@ static Token tokens[1024]
 static int nr_token __attribute__((used)) = 0;
 
 /*those are indivial values*/
-static int oppo_f_type[] = {'+',   '-',   '*',   '/',   '(',
+static int oppo_f_type[] = {'+', '-', '*', '/', '(',
                             TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
 
 static int op_1th[] = {'*', '/'};
@@ -116,7 +116,8 @@ static int ambi_type[] = {'-', '*'}; // change calc
 
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
-        if (type == type_list[i]) return true;
+        if (type == type_list[i])
+            return true;
     }
     return false;
 }
@@ -181,13 +182,17 @@ static bool make_token(char *e) {
 }
 
 bool check_parentheses(uint32_t p, uint32_t q) {
-    if (tokens[p].type != '(' || tokens[q].type != ')') return false;
+    if (tokens[p].type != '(' || tokens[q].type != ')')
+        return false;
     int i, balance = 0;
 
     for (i = p; i < q; i++) {
-        if (tokens[i].type == '(') balance++;
-        else if (tokens[i].type == ')') balance--;
-        if (balance == 0) return false;
+        if (tokens[i].type == '(')
+            balance++;
+        else if (tokens[i].type == ')')
+            balance--;
+        if (balance == 0)
+            return false;
     }
 
     return true;
@@ -211,10 +216,13 @@ int main_sign(int p, int q, int *op_list, int size) {
 
                 parent_count = 0;
                 for (j = q; j > i; j--) {
-                    if (tokens[j].type == '(') parent_count++;
-                    if (tokens[j].type == ')') parent_count--;
+                    if (tokens[j].type == '(')
+                        parent_count++;
+                    if (tokens[j].type == ')')
+                        parent_count--;
                 }
-                if (parent_count == 0) return i;
+                if (parent_count == 0)
+                    return i;
             }
         }
     }
@@ -224,10 +232,14 @@ int main_sign(int p, int q, int *op_list, int size) {
 static int eval_op_eval(uint32_t p, uint32_t q) {
     uint32_t op;
     op = main_sign(p, q, op_5th, ARRLEN(op_5th)); // 运算具有优先级顺序
-    if (op == 0) op = main_sign(p, q, op_4th, ARRLEN(op_4th));
-    if (op == 0) op = main_sign(p, q, op_3th, ARRLEN(op_3th));
-    if (op == 0) op = main_sign(p, q, op_2th, ARRLEN(op_2th));
-    if (op == 0) op = main_sign(p, q, op_1th, ARRLEN(op_1th));
+    if (op == 0)
+        op = main_sign(p, q, op_4th, ARRLEN(op_4th));
+    if (op == 0)
+        op = main_sign(p, q, op_3th, ARRLEN(op_3th));
+    if (op == 0)
+        op = main_sign(p, q, op_2th, ARRLEN(op_2th));
+    if (op == 0)
+        op = main_sign(p, q, op_1th, ARRLEN(op_1th));
 
     Assert(op != 0, "Invalid expr");
 
@@ -272,9 +284,10 @@ int eval(uint32_t p, uint32_t q) {
             return (uint32_t)strtol(tokens[p].str, &endptr, 10);
         case TK_XNUM:
             return (uint32_t)strtol(tokens[p].str, &endptr, 16);
-        case TK_REG:
+        case TK_REG: {
             bool sc;
             return isa_reg_str2val(tokens[p].str + 1, &sc);
+        }
         }
 
     } else if (check_parentheses(p, q) == true) {
