@@ -14,3 +14,4 @@
 /am-kernels
 /nvboard
 verilator/.git
+.vscode/settings.json

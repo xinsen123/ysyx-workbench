@@ -25,12 +25,15 @@
  * This is useful when you use the `si' command.
  * You can modify this value as you want.
  */
-#define MAX_INST_TO_PRINT 10
+#define MAX_INST_TO_PRINT 16
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
+
+static char iringbuf[MAX_INST_TO_PRINT][128];
+static int p_ring = 0;
 
 void device_update();
 void is_wp_update(bool *success);
@@ -39,6 +42,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
     if (ITRACE_COND) {
         log_write("%s\n", _this->logbuf);
+        snprintf(iringbuf[(p_ring++) % MAX_INST_TO_PRINT], 128, "%s", _this->logbuf);
     }
 #endif
     if (g_print_step) {
@@ -62,7 +66,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
     cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE
     char *p = s->logbuf;
-    p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
+    p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);  //利用指针p给logbuf所指内存赋值
     int ilen = s->snpc - s->pc;
     int i;
     uint8_t *inst = (uint8_t *)&s->isa.inst;
@@ -73,7 +77,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 #endif
         p += snprintf(p, 4, " %02x", inst[i]);
     }
-    int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
+    int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4); //在编译期选择参数
     int space_len = ilen_max - ilen;
     if (space_len < 0) space_len = 0;
     space_len = space_len * 3 + 1;
@@ -117,6 +121,12 @@ void assert_fail_msg() {
     statistic();
 }
 
+static void ringbuf_print(){
+    for(int i = 0; i < MAX_INST_TO_PRINT && iringbuf[i][0] != '\0'; i++){
+        printf("%s%s\n", (p_ring % MAX_INST_TO_PRINT) == i + 1 ? "--> " : "    ", iringbuf[i]);
+    }
+}
+
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
     g_print_step = (n < MAX_INST_TO_PRINT);
@@ -126,6 +136,7 @@ void cpu_exec(uint64_t n) {
     case NEMU_QUIT:
         printf("Program execution has ended. To restart the program, exit NEMU "
                "and run again.\n");
+        ringbuf_print();
         return;
     default:
         nemu_state.state = NEMU_RUNNING;
@@ -152,6 +163,7 @@ void cpu_exec(uint64_t n) {
                         ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN)
                         : ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
             nemu_state.halt_pc);
+        ringbuf_print();
         // fall through
     case NEMU_QUIT:
         statistic();
