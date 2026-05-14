@@ -29,7 +29,9 @@ override ARGS += $(ARGS_DIFF)
 
 # Command to execute NEMU
 IMG ?=
-NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
+#这里添加了ELF作为符号表参照，同时还改了NEMU_EXEC的运行
+ELF ?=
+NEMU_EXEC := $(BINARY) $(ARGS) $(IMG) $(ELF)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
 

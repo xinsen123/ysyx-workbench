@@ -32,8 +32,21 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
+#ifdef CONFIG_ITRACE
 static char iringbuf[MAX_INST_TO_PRINT][128];
 static int p_ring = 0;
+#endif
+
+#ifdef CONFIG_FTRACE
+static int fun_indent = 0;
+typedef struct {
+    char name[32];
+    uint32_t begin, end;
+} elf_obj;
+/* 引用 monitor.c 中定义的变量 */
+extern elf_obj fun_table[128];
+extern int fun_cnt;
+#endif
 
 void device_update();
 void is_wp_update(bool *success);
@@ -55,6 +68,22 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     is_wp_update(&success);
     if (success == true) {
         nemu_state.state = NEMU_STOP;
+    }
+#endif
+
+#ifdef CONFIG_FTRACE
+    if ((((_this->isa.inst & 0x7f) == 0x6f) && ((_this->isa.inst & 0x7000) != 0x0))|| //jal
+    (((_this->isa.inst & 0x7f) == 0x67) && (_this->isa.inst & 0x7000) == 0x0)) {//jalr
+        for(int i = 0; i < fun_cnt; i++) {
+            if(dnpc >= fun_table[i].begin && dnpc < fun_table[i].end){
+                bool is_ret = ((_this->isa.inst & 0xf80) == 0x0) &&    // rd == x0
+                              ((_this->isa.inst & 0xf8000) == 0x8000); // rs1 == ra(x1)
+                char *ret_word = is_ret ? "ret" : "call";
+                fun_indent = is_ret ? fun_indent > 0 ? fun_indent - 1 : fun_indent : fun_indent + 1;
+                printf("0x%8x: %*s%s[%s@0x%8x]\n", _this->pc, fun_indent * 2, "", ret_word, fun_table[i].name, dnpc);
+                break;
+            }
+        }
     }
 #endif
 }
