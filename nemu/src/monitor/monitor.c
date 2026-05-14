@@ -67,6 +67,127 @@ static long load_img() {
   return size;
 }
 
+#ifdef CONFIG_FTRACE
+#include <elf.h>
+static char *elf_file = NULL;
+
+  /* 函数符号表：从 ELF 中提取的所有函数名及其地址范围 */
+  typedef struct {
+    char name[32];
+    uint32_t begin, end;  // [begin, end) 左闭右开区间
+  } elf_obj;
+
+  elf_obj fun_table[128];  // 最多存 128 个函数
+  int fun_cnt = 0;         // 实际加载的函数数
+
+  /* 从 ELF 的 .symtab 节中提取所有函数符号 */
+  static void load_elf() {
+    if (elf_file == NULL) {
+      Log("No ELF file provided, FTRACE disabled.");
+      return;
+    }
+
+    FILE *fp = fopen(elf_file, "rb");
+    if (fp == NULL) {
+      Log("Cannot open ELF file '%s'.", elf_file);
+      return;
+    }
+
+    /* ---- 1. 读 ELF 文件头，验证魔数和格式 ---- */
+    Elf32_Ehdr ehdr;
+    if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
+      Log("Failed to read ELF header.");
+      fclose(fp);
+      return;
+    }
+    if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
+      Log("'%s' is not a valid ELF file.", elf_file);
+      fclose(fp);
+      return;
+    }
+    if (ehdr.e_ident[EI_CLASS] != ELFCLASS32) {
+      Log("Only 32-bit ELF is supported.");
+      fclose(fp);
+      return;
+    }
+
+    /* ---- 2. 读取所有节头表 (section headers) ---- */
+    fseek(fp, ehdr.e_shoff, SEEK_SET);
+    Elf32_Shdr *shdr = malloc(ehdr.e_shentsize * ehdr.e_shnum);
+    if (shdr == NULL) { fclose(fp); return; }
+    if (fread(shdr, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum) {
+      Log("Failed to read section headers.");
+      free(shdr); fclose(fp); return;
+    }
+
+    /* 顺便读一下节头字符串表（shstrtab），本函数未用到，为后续扩展保留 */
+    char *shstrtab = NULL;
+    if (ehdr.e_shstrndx != SHN_UNDEF) {
+      shstrtab = malloc(shdr[ehdr.e_shstrndx].sh_size);
+      if (shstrtab) {
+        fseek(fp, shdr[ehdr.e_shstrndx].sh_offset, SEEK_SET);
+        if (fread(shstrtab, shdr[ehdr.e_shstrndx].sh_size, 1, fp) != 1) {
+          Log("Failed to read section header string table.");
+          free(shstrtab); free(shdr); fclose(fp); return;
+        }
+      }
+    }
+
+    /* ---- 3. 找到 .symtab 节及其关联的 .strtab 节 ---- */
+    Elf32_Shdr *symtab_hdr = NULL;
+    Elf32_Shdr *strtab_hdr = NULL;
+    for (int i = 0; i < ehdr.e_shnum; i++) {
+      if (shdr[i].sh_type == SHT_SYMTAB) {
+        symtab_hdr = &shdr[i];
+        strtab_hdr = &shdr[symtab_hdr->sh_link];  // sh_link 指向对应的字符串表
+        break;
+      }
+    }
+    if (symtab_hdr == NULL) {
+      Log("No symbol table found in '%s'.", elf_file);
+      free(shstrtab); free(shdr); fclose(fp); return;
+    }
+
+    /* ---- 4. 读字符串表（存着所有符号名） ---- */
+    size_t strtab_sz = strtab_hdr->sh_size;
+    char *strtab = malloc(strtab_sz);
+    if (strtab == NULL) { free(shstrtab); free(shdr); fclose(fp); return; }
+    fseek(fp, strtab_hdr->sh_offset, SEEK_SET);
+    if (fread(strtab, strtab_sz, 1, fp) != 1) {
+      Log("Failed to read string table.");
+      free(strtab); free(shstrtab); free(shdr); fclose(fp); return;
+    }
+
+    /* ---- 5. 遍历符号表，筛选出函数符号 ---- */
+    int num_syms = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
+    fseek(fp, symtab_hdr->sh_offset, SEEK_SET);
+    fun_cnt = 0;
+
+    for (int i = 0; i < num_syms && fun_cnt < 128; i++) {
+      Elf32_Sym sym;
+      if (fread(&sym, sizeof(sym), 1, fp) != 1) break;
+
+      /* 只取 STT_FUNC 类型、有实际体（st_size > 0）且有地址（st_value > 0）的符号 */
+      if ((ELF32_ST_TYPE(sym.st_info) == STT_FUNC || 
+           ELF32_ST_TYPE(sym.st_info == STT_NOTYPE))&&
+          sym.st_size > 0 && sym.st_value > 0) {
+        fun_table[fun_cnt].begin = sym.st_value;
+        fun_table[fun_cnt].end = sym.st_value + sym.st_size;
+        const char *sym_name = strtab + sym.st_name;  // st_name 是 .strtab 中的偏移
+        snprintf(fun_table[fun_cnt].name, sizeof(fun_table[fun_cnt].name), "%s", sym_name);
+        fun_cnt++;
+      }
+    }
+
+    Log("Loaded %d functions from ELF symbol table.", fun_cnt);
+
+    free(strtab);
+    free(shstrtab);
+    free(shdr);
+    fclose(fp);
+  }
+#endif
+
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
@@ -83,7 +204,11 @@ static int parse_args(int argc, char *argv[]) {
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
-      case 1: img_file = optarg; return 0;
+      case 1: 
+      //case1时为常规字符串，按照此逻辑可无限拓展加参
+      if(img_file == NULL) {img_file = optarg;}
+      else if (elf_file == NULL) {elf_file = optarg; return 0;} 
+      break;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
         printf("\t-b,--batch              run with batch mode\n");
@@ -120,6 +245,9 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
+
+  /* 加载并初始化elf文件，把函数表塞进elf_table中以备使用 */
+  load_elf();
 
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);

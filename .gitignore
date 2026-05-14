@@ -11,7 +11,7 @@
 !.gitignore
 !init.sh
 /fceux-am
-/am-kernels
 /nvboard
 verilator/.git
 .vscode/settings.json
+/am-kernels

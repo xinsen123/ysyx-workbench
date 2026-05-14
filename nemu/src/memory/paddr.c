@@ -57,7 +57,7 @@ word_t paddr_read(paddr_t addr, int len) {
     MTRACE_COND是一个条件表达式，在运行时确定，决定是否执行宏中的代码
 */
 	if (MTRACE_COND) {
-		printf("paddr_read: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, pmem_read(addr, len));
+		log_write("paddr_read: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, pmem_read(addr, len));
 	}
 #endif
 
@@ -71,7 +71,7 @@ word_t paddr_read(paddr_t addr, int len) {
 void paddr_write(paddr_t addr, int len, word_t data) {
 #ifdef CONFIG_MTRACE_COND
     if (MTRACE_COND) {
-        printf("paddr_writ: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, data);
+        log_write("paddr_writ: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, data);
     }
 #endif
     
