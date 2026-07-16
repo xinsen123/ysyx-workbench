@@ -31,30 +31,52 @@ static void itoa(int num, char *dst, int *count) {
 }
 
 int printf(const char *fmt, ...) {
-    panic("Not implemented");
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+
+    int count = vsnprintf(buf, sizeof(buf), fmt, args);
+    for (int i = 0; i <= count; i++) {
+        putch(buf[i]);
+    }
+    return count;
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-    panic("Not implemented");
+    return vsnprintf(out, (size_t)-1, fmt, ap);
 }
 
 int sprintf(char *out, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
+
+    return vsnprintf(out, (size_t)-1, fmt, args);
+}
+
+int snprintf(char *out, size_t n, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    return vsnprintf(out, n, fmt, args);
+}
+
+int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
     int count = 0;
     char *str;
-
     const char *buf = fmt;
-    while (*buf != '\0') {
+    
+    size_t max_n = n - 1;
+
+    while (*buf != '\0' && count < max_n) {
         if (*buf == '%') {
             switch (*(buf + 1)) {
             case 'd': {
-                int num = va_arg(args, int);
+                int num = va_arg(ap, int);
                 itoa(num, out, &count);
                 break;
             }
             case 's': {
-                str = va_arg(args, char *);
+                str = va_arg(ap, char *);
                 if (str) {
                     while (*str != '\0') {
                         out[count++] = *str++;
@@ -70,7 +92,6 @@ int sprintf(char *out, const char *fmt, ...) {
                 // 未知格式，原样输出
                 out[count++] = '%';
                 out[count++] = *buf;
-                buf++;
                 break;
             }
             buf++; // 跳过 '%'
@@ -81,16 +102,7 @@ int sprintf(char *out, const char *fmt, ...) {
     }
 
     out[count] = '\0'; // 添加字符串结束符
-    va_end(args);
     return count;
-}
-
-int snprintf(char *out, size_t n, const char *fmt, ...) {
-    panic("Not implemented");
-}
-
-int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
-    panic("Not implemented");
 }
 
 #endif

@@ -72,9 +72,10 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
 
 #ifdef CONFIG_FTRACE
-    if ((((_this->isa.inst & 0x7f) == 0x6f) && ((_this->isa.inst & 0x7000) != 0x0))|| //jal
-    (((_this->isa.inst & 0x7f) == 0x67) && (_this->isa.inst & 0x7000) == 0x0)) {//jalr
+    if ((((_this->isa.inst & 0x7f) == 0x6f) && ((_this->isa.inst & 0xf80) != 0x0))|| //jal，rd不为x0时有意义
+    (((_this->isa.inst & 0x7f) == 0x67) && (_this->isa.inst & 0x7000) == 0x0)) {//opcode & fun3 -> jalr
         for(int i = 0; i < fun_cnt; i++) {
+            /* rd不为x0的jal和任意jalr可识别为函数出入口，然后再对jalr进行进一步判断 */
             if(dnpc >= fun_table[i].begin && dnpc < fun_table[i].end){
                 bool is_ret = ((_this->isa.inst & 0xf80) == 0x0) &&    // rd == x0
                               ((_this->isa.inst & 0xf8000) == 0x8000); // rs1 == ra(x1)
