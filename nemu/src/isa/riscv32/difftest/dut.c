@@ -18,6 +18,14 @@
 #include "../local-include/reg.h"
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
+  for (int i = 0; i < RISCV_GPR_NUM; i++) {
+    if (ref_r->gpr[i] != cpu.gpr[i]) {
+      return true;
+    }
+  }
+  if (ref_r->pc != pc) {
+    return true;
+  }
   return false;
 }
 

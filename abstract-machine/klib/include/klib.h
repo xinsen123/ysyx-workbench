@@ -9,7 +9,8 @@
 extern "C" {
 #endif
 
-//#define __NATIVE_USE_KLIB__
+// 若定义，则使用amkilb库；若未定义，则使用标准库
+#define __NATIVE_USE_KLIB__
 
 // string.h
 void  *memset    (void *s, int c, size_t n);
