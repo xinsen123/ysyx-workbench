@@ -20,13 +20,16 @@
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   for (int i = 0; i < RISCV_GPR_NUM; i++) {
     if (ref_r->gpr[i] != cpu.gpr[i]) {
-      return true;
+      printf("[0x%08x]Diff find in reg [%2s]: right: 0x%08x, now: 0x%08x\n", 
+                                pc, reg_name(i), ref_r->gpr[i], cpu.gpr[i]);
+      return false;
     }
   }
-  if (ref_r->pc != pc) {
-    return true;
+  if (ref_r->pc != cpu.pc) {
+    printf("[0x%08x]Diff find in [pc]: right: 0x%08x, now: 0x%08x\n", pc, ref_r->pc, cpu.pc);
+    return false;
   }
-  return false;
+  return true;
 }
 
 void isa_difftest_attach() {
