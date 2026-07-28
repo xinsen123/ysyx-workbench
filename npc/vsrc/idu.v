@@ -9,7 +9,7 @@ module idu (
     output [`DATA_WIDTH-1:0] imm,
     
     output [1:0] reg_input,
-    output [2:0] sl_type,
+    output [3:0] sl_type,
     output alu_input1, alu_input2,
 
     output en_reg, en_pc,

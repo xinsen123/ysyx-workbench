@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
     load_img(argv[1]);
 
     reset();
-    int i = 10;
+    int i = 100;
     while (i-- && !is_stop) {
         update();
-        display_regs();
+        // display_regs();
     }
 
     delete top;
