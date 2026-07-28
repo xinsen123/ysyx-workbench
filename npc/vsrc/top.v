@@ -30,7 +30,6 @@ module top(
     
     ifu IFU(
         .pc   	(pc    ),
-
         .inst 	(inst  )
     );
     
@@ -41,7 +40,7 @@ module top(
     wire [`REG_ADDR_WIDTH-1:0] radd2;
     wire [`DATA_WIDTH-1:0] imm;
     wire [1:0] reg_input;
-    wire [2:0] sl_type;
+    wire [3:0] sl_type;
     wire alu_input1;
     wire alu_input2;
     wire en_reg;
@@ -81,8 +80,23 @@ module top(
             .alu_out    	(alu_out     )
         );
 
+    // output declaration of module lsu
+    reg [`DATA_WIDTH-1:0] rdata;
+    
+    lsu LSU(
+        .addr  	(alu_out),
+        .wdata 	(rs2    ),
+        .rdata 	(rdata  ),
+        .ren   	(mem_r  ),
+        .wen   	(mem_w  ),
+        .clk   	(clk    ),
+        .wmask 	(sl_type)
+    );
+    
+
     assign reg_in = (reg_input == `REG_ALU) ? alu_out :
-           (reg_input == `REG_PC)  ? pc+4    :
+           (reg_input == `REG_PC)           ? pc+4    :
+           (reg_input == `REG_MEM)          ? rdata   :  
            0;
 
     reg [`DATA_WIDTH-1:0] pc;
