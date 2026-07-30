@@ -110,7 +110,7 @@ module top(
             ebreak();
         end
         pc <= en_pc ? alu_out : pc+4;
-        // $display("0x%x: 0x%x", pc, inst);
+        $display("0x%x: 0x%x", pc, inst);
     end
 
 endmodule

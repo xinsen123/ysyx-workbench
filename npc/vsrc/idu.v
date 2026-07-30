@@ -68,7 +68,7 @@ module idu (
                        (is_lw || is_lbu) ? `REG_MEM :
                        (is_jalr) ? `REG_PC :
                        `REG_NONE;
-    assign sl_type = (is_lw)  ? `SL_WORD  : 
+    assign sl_type = (is_lw || is_sw)  ? `SL_WORD  : 
                      (is_lbu) ? `SL_UBYTE :
                      (is_sb)  ? `SL_BYTE  :
                      `SL_NONE;
