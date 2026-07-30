@@ -1,5 +1,4 @@
-#include "include/memory.h"
-#include "include/dbg.h"
+#include "include/const.h"
 
 uint8_t pmem[MEM_SIZE];
 
@@ -17,6 +16,7 @@ extern "C" int pmem_read(int paddr) {
 };
 
 extern "C" void pmem_write(int paddr, int wdata, char wmask) {
+    printf("case:%04x->%08x\n", wmask, wdata);
     switch (wmask) {
         case SL_BYTE: *(uint8_t *)  guest_to_host(paddr) = (uint8_t)  wdata; break;
         case SL_HALF: *(uint16_t *) guest_to_host(paddr) = (uint16_t) wdata;break;
