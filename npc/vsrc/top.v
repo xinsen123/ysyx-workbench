@@ -4,7 +4,8 @@
 
 import "DPI-C" function void ebreak();
 module top(
-        input clk
+        input clk,
+        output reg [`DATA_WIDTH-1:0] pc
     );
 
 
@@ -98,8 +99,6 @@ module top(
            (reg_input == `REG_PC)           ? pc+4    :
            (reg_input == `REG_MEM)          ? rdata   :  
            0;
-
-    reg [`DATA_WIDTH-1:0] pc;
 
     initial begin
         pc = 32'h80000000;

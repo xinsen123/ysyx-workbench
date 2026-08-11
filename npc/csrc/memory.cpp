@@ -16,7 +16,7 @@ extern "C" int pmem_read(int paddr) {
 };
 
 extern "C" void pmem_write(int paddr, int wdata, char wmask) {
-    printf("case:%04x->%08x\n", wmask, wdata);
+    // printf("case:%04x->%08x\n", wmask, wdata);
     switch (wmask) {
         case SL_BYTE: *(uint8_t *)  guest_to_host(paddr) = (uint8_t)  wdata; break;
         case SL_HALF: *(uint16_t *) guest_to_host(paddr) = (uint16_t) wdata;break;
@@ -29,8 +29,8 @@ extern "C" void pmem_write(int paddr, int wdata, char wmask) {
 void load_img(char *img) {
     FILE *fp = fopen(img, "r");
     if (fp == NULL) {
-        printf("img is empty use default instead\n");
-        return;
+        printf("img is empty\n");
+        assert(0);
     }
 
     fseek(fp, 0, SEEK_END);
