@@ -164,7 +164,7 @@ static char *elf_file = NULL;
 
       /* 只取 STT_FUNC 类型、有实际体（st_size > 0）且有地址（st_value > 0）的符号 */
       if ((ELF32_ST_TYPE(sym.st_info) == STT_FUNC || 
-           ELF32_ST_TYPE(sym.st_info == STT_NOTYPE))&&
+           ELF32_ST_TYPE(sym.st_info) == STT_NOTYPE)&&
           sym.st_size > 0 && sym.st_value > 0) {
         fun_table[fun_cnt].begin = sym.st_value;
         fun_table[fun_cnt].end = sym.st_value + sym.st_size;

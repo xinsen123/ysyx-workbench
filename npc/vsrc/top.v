@@ -27,7 +27,7 @@ module top(
                  );
 
     // output declaration of module ifu
-    reg [`DATA_WIDTH-1:0] inst;
+    reg [`DATA_WIDTH-1:0] inst /*verilator public*/;
     
     ifu IFU(
         .pc   	(pc    ),
@@ -109,7 +109,7 @@ module top(
             ebreak();
         end
         pc <= en_pc ? alu_out : pc+4;
-        $display("0x%x: 0x%x", pc, inst);
+        // itrace 已在 C++ 侧实现 (csrc/cpu/cpu-exec.c), 此处不再 $display
     end
 
 endmodule

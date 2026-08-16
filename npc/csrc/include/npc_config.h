@@ -33,9 +33,9 @@
 
 /* mtrace: 访存 trace */
 
-// #define CONFIG_MTRACE 1
-// #define CONFIG_MTRACE_COND 1
-// #define MTRACE_COND 1
+#define CONFIG_MTRACE 1
+#define CONFIG_MTRACE_COND 1
+#define MTRACE_COND 1
 
 
 /* ftrace: 函数调用 trace */
