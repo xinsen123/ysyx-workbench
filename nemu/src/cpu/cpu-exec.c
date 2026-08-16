@@ -153,7 +153,7 @@ void assert_fail_msg() {
 
 static void ringbuf_print(){
     for(int i = 0; i < MAX_INST_TO_PRINT && iringbuf[i][0] != '\0'; i++){
-        printf("%s%s\n", (p_ring % MAX_INST_TO_PRINT) == i + 1 ? "--> " : "    ", iringbuf[i]);
+        printf("%s%s\n", ((p_ring - 1) % MAX_INST_TO_PRINT) == i ? "--> " : "    ", iringbuf[i]);
     }
 }
 

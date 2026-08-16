@@ -1,40 +1,46 @@
 # 源文件查找
 VSRC = $(shell find $(abspath ./vsrc) -name "top.v")
 CSRC = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+# 编译 C/C++ 源码所需的头文件搜索路径 (sdb/expr 等从 NEMU 移植的代码使用 <xxx.h> 风格)
+INCLUDE = $(abspath ./csrc/include)
+CFLAGS =  -I$(INCLUDE)
+CFLAGS +=  -I$(abspath ./tools/capstone/repo/include)
 VPATH = -I./vsrc
 
 TOPNAME = top
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(OBJ_DIR)/V$(TOPNAME)  # 修正：可执行文件在 obj_dir 中
-ECODE = build/ecoder
-
-img = 
 SMOD = top
+
+# 运行参数 (传给 NPC 可执行文件)
+img =        # 镜像文件, 如 am-kernels/tests/cpu-tests/build/add-minirv-npc.bin
+elf =        # ELF 文件 (ftrace 需要), 如 add-minirv-npc.elf
+override args ?= --log=$(BUILD_DIR)/nemu-log.txt
+
 
 # 创建构建目录
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 # 主要构建规则
-$(BIN): $(BUILD_DIR) $(VSRC) $(CSRC)
-	@rm -rf $(OBJ_DIR)
-	verilator -cc --build --trace -j --Mdir $(OBJ_DIR) $(VPATH) --top-module $(TOPNAME) $(VSRC) --exe $(CSRC)
+$(BIN): $(BUILD_DIR) $(VSRC) $(CSRC) $(INCLUDE)/npc_config.h
+	verilator -cc --build --trace -j --Mdir $(OBJ_DIR) $(VPATH) --top-module $(TOPNAME) $(VSRC) --exe $(CSRC) --CFLAGS "$(CFLAGS) -g" --LDFLAGS "-lreadline"
 	$(MAKE) -C $(OBJ_DIR) -f V$(TOPNAME).mk V$(TOPNAME)
 
 # 运行仿真
 run: $(BIN)  # 修正：依赖 BIN
-	@$(BIN) $(img)
+	@$(BIN) $(args) $(img) $(elf)
 
 # gdb
 gdb: $(BIN)
-	gdb --args ./$(BIN) $(img)
+	gdb --args ./$(BIN) $(args) $(img) $(elf)
 
 # 清理
 clean:
 	rm -rf $(BUILD_DIR)
 
-show: 
+show:
 	yosys -p "read_verilog vsrc/$(SMOD).v; \
 				hierarchy -top $(SMOD); \
 				show $(SMOD);"
