@@ -1,0 +1,248 @@
+#include "sdb.h"
+#include "debug.h"
+#include <cpu/cpu.h>
+#include <isa.h>
+#include <iso646.h>
+#include <readline/history.h>
+#include <readline/readline.h>
+
+#include <memory/vaddr.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+static int is_batch_mode = false;
+static int MEM_BEGIN = 0x80000000;
+static int MEM_END = 0x87ffffff;
+
+void init_regex();
+void init_wp_pool();
+
+/* We use the `readline' library to provide more flexibility to read from stdin.
+ */
+static char *rl_gets() {
+    static char *line_read = NULL;
+
+    if (line_read) {
+        free(line_read);
+        line_read = NULL;
+    }
+
+    line_read = readline("(npc) ");
+
+    if (line_read && *line_read) {
+        add_history(line_read);
+    }
+
+    return line_read;
+}
+
+static int is_args_null(char *args) {
+    if (args == NULL) {
+        return 1;
+    }
+    return 0;
+}
+
+static int cmd_c(char *args) {
+    cpu_exec(-1);
+    return 0;
+}
+
+static int cmd_q(char *args) {
+    npc_state.state = NPC_QUIT;
+    return -1;
+}
+
+static int cmd_help(char *args);
+
+static int cmd_si(char *args) {
+    int num;
+    if (is_args_null(args)) num = 1;
+    else num = atoi(strtok(NULL, " "));
+    cpu_exec(num > 0 ? num : 1);
+    return 0;
+};
+
+static int cmd_info(char *args) {
+    char *arg1 = strtok(NULL, " ");
+    if (is_args_null(args)) return 0;
+    if (strcmp(arg1, "r") == 0) {
+        isa_reg_display();
+    } else if (strcmp(arg1, "w") == 0) {
+        show_wp();
+    }
+    return 0;
+};
+
+static int cmd_x(char *args) {
+    int len = 0;
+    bool sc;
+
+    char *arg_len = strtok(NULL, " ");
+    Assert(arg_len != NULL, "arglen cannot be null");
+
+    len = expr(arg_len, &sc);
+    word_t addr = expr(args + strlen(arg_len) + 1, &sc) & ~0x3;
+
+    if (addr < MEM_BEGIN || addr > MEM_END) {
+        printf("address is out of memory!\n");
+        return 0;
+    };
+
+    word_t addr_end = addr + len;
+    for (; addr < addr_end; addr++) {
+        if (addr % 4 == 0 && addr != MEM_BEGIN) printf("\n");
+        if (addr % 4 == 0) printf("%#010x: ", addr);
+        word_t word = vaddr_read(addr, 1);
+        printf("%02x ", word);
+    }
+
+    printf("\n");
+    return 0;
+};
+
+static int cmd_p(char *args) {
+    bool success = 0;
+    int result = expr(args, &success);
+    if (success == false) {
+        printf("error occured in calculate\n");
+        return 0;
+    } else printf("result: %d\n", result);
+    return 0;
+}
+
+static int cmd_testexpr(char *args) {
+    FILE *input = fopen(
+        "/home/xinsen123/YSYX/ysyx-workbench/nemu/tools/gen-expr/input", "r");
+    char buf[4096];
+    bool success = 0;
+    char *expa;
+    int infer, result, count = 1;
+
+    while (fgets(buf, 4096, input)) {
+        printf("------------------------------------------\n");
+        printf("The %dth running:\n", count);
+
+        expa = strchr(buf, ' '); // 跳过第一个空格前面的内容
+        infer = atoi(buf);
+        result = expr(expa, &success);
+
+        printf("expr: %s result: %d\n", expa, result);
+        if (infer != result) panic("Error result in calculate"); // 结果检查
+        count++;
+    }
+    return 0;
+}
+
+static int cmd_w(char *args) {
+    new_wp(args);
+    return 0;
+}
+
+static int cmd_d(char *args) {
+    char *cNO = strtok(NULL, " ");
+    int NO = strtol(cNO, NULL, 10);
+    free_wp(NO);
+    return 0;
+}
+
+static struct {
+    const char *name;
+    const char *description;
+    int (*handler)(char *);
+} cmd_table[] = {
+    {"help", "Display information about all supported commands", cmd_help},
+    {"c", "Continue the execution of the program", cmd_c},
+    {"q", "Exit NEMU", cmd_q},
+    {"si", "si [N] -> Execute the program N steps", cmd_si},
+    {"info", "Display information. r -> register, w -> monitor", cmd_info},
+    {"x", "x N M -> Output N bytes information from M in memory", cmd_x},
+    {"p", "Evaluate the expr\'s number", cmd_p},
+    {"te", "Test the expr runs", cmd_testexpr},
+    {"w", "Add watchpoints", cmd_w},
+    {"d", "Delete NO watchpoint", cmd_d},
+    /* TODO: Add more commands */
+
+};
+
+#define NR_CMD ARRLEN(cmd_table)
+
+static int cmd_help(char *args) {
+    /* extract the first argument */
+    char *arg = strtok(NULL, " ");
+    int i;
+
+    if (arg == NULL) {
+        /* no argument given */
+        for (i = 0; i < NR_CMD; i++) {
+            printf("%-4s - %s\n", cmd_table[i].name, cmd_table[i].description);
+        }
+    } else {
+        for (i = 0; i < NR_CMD; i++) {
+            if (strcmp(arg, cmd_table[i].name) == 0) {
+                printf("%-4s - %s\n", cmd_table[i].name,
+                       cmd_table[i].description);
+                return 0;
+            }
+        }
+        printf("Unknown command '%s'\n", arg);
+    }
+    return 0;
+}
+
+void sdb_set_batch_mode() { is_batch_mode = true; }
+
+void sdb_mainloop() {
+    if (is_batch_mode) {
+        cmd_c(NULL);
+        return;
+    }
+
+    for (char *str; (str = rl_gets()) != NULL;) {
+        char *str_end = str + strlen(str);
+
+        /* extract the first token as the command */
+        char *cmd = strtok(str, " ");
+        if (cmd == NULL) {
+            continue;
+        }
+
+        /* treat the remaining string as the arguments,
+         * which may need further parsing
+         */
+        char *args = cmd + strlen(cmd) + 1;
+        if (args >= str_end) {
+            args = NULL;
+        }
+
+#ifdef CONFIG_DEVICE
+        extern void sdl_clear_event_queue();
+        sdl_clear_event_queue();
+#endif
+
+        int i;
+        for (i = 0; i < NR_CMD; i++) {
+            if (strcmp(cmd, cmd_table[i].name) == 0) {
+                if (cmd_table[i].handler(args) < 0) {
+                    return;
+                }
+                break;
+            }
+        }
+
+        if (i == NR_CMD) {
+            printf("Unknown command '%s'\n", cmd);
+        }
+    }
+}
+
+void init_sdb() {
+    /* Compile the regular expressions. */
+    init_regex();
+
+    /* Initialize the watchpoint pool. */
+    init_wp_pool();
+}
