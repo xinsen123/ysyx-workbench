@@ -5,6 +5,7 @@
 #include <memory/paddr.h>
 #include <locale.h>
 #include <stdio.h>
+#include <cpu/difftest.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -46,8 +47,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     if (g_print_step) {
         IFDEF(CONFIG_ITRACE, puts(_this->logbuf));
     }
-    /* difftest 由你自己实现: 在 NPC 的每个周期结束后调用
-     * IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc)); */
+    /* difftest 由你自己实现: 在 NPC 的每个周期结束后调用 --deepseek */
+    IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
 #ifdef CONFIG_WATCHPOINT
     bool success = false;

@@ -18,7 +18,7 @@ module lsu(
     always_comb begin
         if(ren) begin
             rdata = pmem_read(addr) & {{8{wmask[3]}}, {8{wmask[2]}}, {8{wmask[1]}}, {8{wmask[0]}}};
-            $display("r:0x%x", rdata);
+            // $display("r:0x%x", rdata);
         end else begin
             rdata = `DATA_WIDTH'b0;
         end
