@@ -16,12 +16,14 @@
 #define __GUEST_ISA__ riscv32
 
 #define CONFIG_ISA_riscv 1
+#define CONFIG_RVE 1
 
 /* 是否输出 trace 到日志文件 (log_write 的开关) */
 
 #define CONFIG_TRACE 1
 #define CONFIG_TRACE_START 1
 #define CONFIG_TRACE_END 0xffffffffu
+
 
 
 /* itrace: 指令执行 trace (默认全开) */
@@ -31,22 +33,28 @@
 #define ITRACE_COND 1
 
 
+
 /* mtrace: 访存 trace */
 
-#define CONFIG_MTRACE 1
-#define CONFIG_MTRACE_COND 1
-#define MTRACE_COND 1
+// #define CONFIG_MTRACE 1
+// #define CONFIG_MTRACE_COND 1
+// #define MTRACE_COND 1
 
 
 /* ftrace: 函数调用 trace */
 
-#define CONFIG_FTRACE 1
+// #define CONFIG_FTRACE 1
+
 
 
 /* sdb 监视点 */
 
-#define CONFIG_WATCHPOINT 1
+// #define CONFIG_WATCHPOINT 1
 
+
+
+/* difftest */
+// #define CONFIG_DIFFTEST 1
 
 /* 供 utils.h 的 log_write 使用 */
 

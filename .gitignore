@@ -15,3 +15,5 @@
 verilator/.git
 .vscode/settings.json
 /am-kernels
+/prelearn
+/oss-cad-suite

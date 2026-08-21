@@ -207,7 +207,9 @@ static int parse_args(int argc, char *argv[]) {
       case 1: 
       //case1时为常规字符串，按照此逻辑可无限拓展加参
       if(img_file == NULL) {img_file = optarg;}
-      else if (elf_file == NULL) {elf_file = optarg; return 0;} 
+      #ifdef CONFIG_FTRACE
+        else if (elf_file == NULL) {elf_file = optarg; return 0;} 
+      #endif
       break;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -247,7 +249,9 @@ void init_monitor(int argc, char *argv[]) {
   long img_size = load_img();
 
   /* 加载并初始化elf文件，把函数表塞进elf_table中以备使用 */
+  #ifdef CONFIG_FTRACE
   load_elf();
+  #endif
 
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);

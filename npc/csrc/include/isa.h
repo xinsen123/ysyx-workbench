@@ -21,6 +21,7 @@
 /* NPC 的寄存器堆在 RTL (RegisterFile.v) 中, C++ 侧通过 DPI-C 读取,
  * 因此 CPU_state 只保留 pc 镜像 (与 RTL 的 top->pc 同步) */
 typedef struct {
+  word_t gpr[16];
   vaddr_t pc;
 } riscv32_CPU_state;
 

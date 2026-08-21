@@ -151,11 +151,15 @@ void assert_fail_msg() {
     statistic();
 }
 
+#ifdef CONFIG_ITRACE
+
 static void ringbuf_print(){
     for(int i = 0; i < MAX_INST_TO_PRINT && iringbuf[i][0] != '\0'; i++){
         printf("%s%s\n", ((p_ring - 1) % MAX_INST_TO_PRINT) == i ? "--> " : "    ", iringbuf[i]);
     }
 }
+
+#endif
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
@@ -166,8 +170,10 @@ void cpu_exec(uint64_t n) {
     case NEMU_QUIT:
         printf("Program execution has ended. To restart the program, exit NEMU "
                "and run again.\n");
-        ringbuf_print();
-        return;
+    #ifdef CONFIG_ITRACE
+               ringbuf_print();
+    #endif
+               return;
     default:
         nemu_state.state = NEMU_RUNNING;
     }
@@ -193,7 +199,9 @@ void cpu_exec(uint64_t n) {
                         ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN)
                         : ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
             nemu_state.halt_pc);
-        ringbuf_print();
+    #ifdef CONFIG_ITRACE
+            ringbuf_print();
+    #endif
         // fall through
     case NEMU_QUIT:
         statistic();
