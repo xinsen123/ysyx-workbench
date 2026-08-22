@@ -1,4 +1,5 @@
 `include "npc_const.sv"
+`include "npc_isa.sv"
 
 import "DPI-C" function void ebreak();
 module top import npc_const::*;(
@@ -6,6 +7,7 @@ module top import npc_const::*;(
         output reg [DATA_WIDTH-1:0] pc
     );
 
+    import npc_isa::*;
 
     wire [DATA_WIDTH-1:0] rs1, rs2;
     wire [DATA_WIDTH-1:0] reg_in;
@@ -39,9 +41,9 @@ module top import npc_const::*;(
     wire [REG_ADDR_WIDTH-1:0] radd2;
     wire [DATA_WIDTH-1:0] imm;
     reg_in_e reg_input;
-    wire [3:0] sl_type;
-    wire alu_input1;
-    wire alu_input2;
+    sl_type_e sl_type;
+    alu_in_1 alu_input1;
+    alu_in_2 alu_input2;
     wire en_reg;
     wire en_pc;
     wire mem_r;
