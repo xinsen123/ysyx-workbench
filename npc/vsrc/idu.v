@@ -1,15 +1,15 @@
-`include "const.vh"
+`include "npc_const.sv"
 
-module idu (
-    input [`DATA_WIDTH-1:0] inst,
+module idu import npc_const::*;(
+    input [DATA_WIDTH-1:0] inst,
 
-    output [`REG_ADDR_WIDTH-1:0] rd,
-    output [`REG_ADDR_WIDTH-1:0] radd1,
-    output [`REG_ADDR_WIDTH-1:0] radd2,
-    output [`DATA_WIDTH-1:0] imm,
+    output [REG_ADDR_WIDTH-1:0] rd,
+    output [REG_ADDR_WIDTH-1:0] radd1,
+    output [REG_ADDR_WIDTH-1:0] radd2,
+    output [DATA_WIDTH-1:0] imm,
     
-    output [1:0] reg_input,
-    output [3:0] sl_type,
+    output reg_in_e reg_input,
+    output sl_type_e sl_type,
     output alu_input1, alu_input2,
 
     output en_reg, en_pc,
@@ -57,20 +57,20 @@ module idu (
     assign mem_r = is_lbu || is_lw;
     assign is_ebreak = is_ebrk;
 
-    assign rd = (type_i || type_r || type_u) ? inst[7+`REG_ADDR_WIDTH-1:7] : 0;
-    assign radd1 = (type_i || type_r || type_s) ? inst[15+`REG_ADDR_WIDTH-1:15] : 0;
-    assign radd2 = (type_r || type_s) ? inst[20+`REG_ADDR_WIDTH-1:20] : 0;
+    assign rd = (type_i || type_r || type_u) ? inst[7+REG_ADDR_WIDTH-1:7] : 0;
+    assign radd1 = (type_i || type_r || type_s) ? inst[15+REG_ADDR_WIDTH-1:15] : 0;
+    assign radd2 = (type_r || type_s) ? inst[20+REG_ADDR_WIDTH-1:20] : 0;
     assign imm = (type_i) ? immi :
                  (type_s) ? imms : 
                  (type_u) ? immu :
                  0;
-    assign reg_input = (is_add || is_addi || is_lui) ? `REG_ALU :
-                       (is_lw || is_lbu) ? `REG_MEM :
-                       (is_jalr) ? `REG_PC :
-                       `REG_NONE;
-    assign sl_type = (is_lw || is_sw)  ? `SL_WORD  : 
-                     (is_lbu) ? `SL_UBYTE :
-                     (is_sb)  ? `SL_BYTE  :
-                     `SL_NONE;
+    assign reg_input = (is_add || is_addi || is_lui) ? REG_ALU :
+                       (is_lw || is_lbu) ? REG_MEM :
+                       (is_jalr) ? REG_PC :
+                       REG_NONE;
+    assign sl_type = (is_lw || is_sw)  ? SL_WORD  : 
+                     (is_lbu) ? SL_UBYTE :
+                     (is_sb)  ? SL_BYTE  :
+                     SL_NONE;
 
 endmodule

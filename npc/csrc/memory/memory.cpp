@@ -17,12 +17,7 @@ extern "C" int pmem_read(int paddr) {
 };
 
 /* RTL lsu.v 写存: wmask 与长度的对应关系见 const.vh 的 SL_* 定义 */
-extern "C" void pmem_write(int paddr, int wdata, char wmask) {
-    switch (wmask) {
-        case SL_BYTE: paddr_write((paddr_t)paddr, 1, (word_t)wdata); break;
-        case SL_HALF: paddr_write((paddr_t)paddr, 2, (word_t)wdata); break;
-        case SL_WORD: paddr_write((paddr_t)paddr, 4, (word_t)wdata); break;
-        default: break;
-    }
+extern "C" void pmem_write(int paddr, char wmask, int wdata) {
+    paddr_write(paddr, wmask, wdata);
     return;
 };

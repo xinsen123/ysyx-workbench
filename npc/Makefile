@@ -1,7 +1,8 @@
 # 源文件查找
-VSRC = $(shell find $(abspath ./vsrc) -name "top.v")
-CSRC = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-HSRC = $(shell find $(abspath ./csrc) -name "*.h")
+PKG_SRC = $(abspath ./vsrc/npc_const.sv)
+VSRC    = $(PKG_SRC) $(filter-out $(PKG_SRC),$(shell find $(abspath ./vsrc) -name "*.v" -or -name "*.sv"))
+CSRC 	= $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+HSRC 	= $(shell find $(abspath ./csrc) -name "*.h")
 # 编译 C/C++ 源码所需的头文件搜索路径 (sdb/expr 等从 NEMU 移植的代码使用 <xxx.h> 风格)
 INCLUDE = $(abspath ./csrc/include)
 CFLAGS =  -I$(INCLUDE)
@@ -25,12 +26,13 @@ override args += $(ARGS_DIFF)
 DIFF_REF_SO = $(NEMU_HOME)/build/riscv32-nemu-interpreter-so
 ARGS_DIFF = --diff=$(DIFF_REF_SO)
 
+all: $(BIN)
 # 创建构建目录
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 # 主要构建规则
-$(BIN): $(BUILD_DIR) $(VSRC) $(CSRC) $(HSRC)
+$(BIN): $(BUILD_DIR) $(PKG_SRC) $(VSRC) $(CSRC) $(HSRC)
 	verilator -cc --build --trace -j --Mdir $(OBJ_DIR) $(VPATH) --top-module $(TOPNAME) $(VSRC) --exe $(CSRC) --CFLAGS "$(CFLAGS) -g" --LDFLAGS "-lreadline"
 	$(MAKE) -C $(OBJ_DIR) -f V$(TOPNAME).mk V$(TOPNAME)
 
