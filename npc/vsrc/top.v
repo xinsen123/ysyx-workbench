@@ -1,33 +1,31 @@
-`include "const.vh"
-`include "RegisterFile.v"
-`include "idu.v"
+`include "npc_const.sv"
 
 import "DPI-C" function void ebreak();
-module top(
+module top import npc_const::*;(
         input clk,
-        output reg [`DATA_WIDTH-1:0] pc
+        output reg [DATA_WIDTH-1:0] pc
     );
 
 
-    wire [`DATA_WIDTH-1:0] rs1, rs2;
-    wire [`DATA_WIDTH-1:0] reg_in;
+    wire [DATA_WIDTH-1:0] rs1, rs2;
+    wire [DATA_WIDTH-1:0] reg_in;
 
     RegisterFile #(
-                     .ADDR_WIDTH(`REG_ADDR_WIDTH),
-                     .DATA_WIDTH(`DATA_WIDTH)
+                     .ADDR_WIDTH(REG_ADDR_WIDTH),
+                     .DATA_WIDTH(DATA_WIDTH)
                  ) GPR (
                      .clk(clk),
-                     .waddr(rd[`REG_ADDR_WIDTH-1:0]),
+                     .waddr(rd[REG_ADDR_WIDTH-1:0]),
                      .wdata(reg_in),
                      .wen(en_reg),
-                     .radd1(radd1[`REG_ADDR_WIDTH-1:0]),
-                     .radd2(radd2[`REG_ADDR_WIDTH-1:0]),
+                     .radd1(radd1[REG_ADDR_WIDTH-1:0]),
+                     .radd2(radd2[REG_ADDR_WIDTH-1:0]),
                      .rs1(rs1),
                      .rs2(rs2)
                  );
 
     // output declaration of module ifu
-    reg [`DATA_WIDTH-1:0] inst /*verilator public*/;
+    reg [DATA_WIDTH-1:0] inst /*verilator public*/;
     
     ifu IFU(
         .pc   	(pc    ),
@@ -36,11 +34,11 @@ module top(
     
 
     // output declaration of module idu
-    wire [`REG_ADDR_WIDTH-1:0] rd;
-    wire [`REG_ADDR_WIDTH-1:0] radd1;
-    wire [`REG_ADDR_WIDTH-1:0] radd2;
-    wire [`DATA_WIDTH-1:0] imm;
-    wire [1:0] reg_input;
+    wire [REG_ADDR_WIDTH-1:0] rd;
+    wire [REG_ADDR_WIDTH-1:0] radd1;
+    wire [REG_ADDR_WIDTH-1:0] radd2;
+    wire [DATA_WIDTH-1:0] imm;
+    reg_in_e reg_input;
     wire [3:0] sl_type;
     wire alu_input1;
     wire alu_input2;
@@ -70,7 +68,7 @@ module top(
 
 
     // output declaration of module exu
-    wire [`DATA_WIDTH-1:0] alu_out;
+    wire [DATA_WIDTH-1:0] alu_out;
 
     exu EXU(
             .rs1        	(rs1         ),
@@ -82,7 +80,7 @@ module top(
         );
 
     // output declaration of module lsu
-    reg [`DATA_WIDTH-1:0] rdata;
+    reg [DATA_WIDTH-1:0] rdata;
     
     lsu LSU(
         .addr  	(alu_out),
@@ -95,9 +93,9 @@ module top(
     );
     
 
-    assign reg_in = (reg_input == `REG_ALU) ? alu_out :
-           (reg_input == `REG_PC)           ? pc+4    :
-           (reg_input == `REG_MEM)          ? rdata   :  
+    assign reg_in = (reg_input == REG_ALU) ? alu_out :
+           (reg_input == REG_PC)           ? pc+4    :
+           (reg_input == REG_MEM)          ? rdata   :  
            0;
 
     initial begin

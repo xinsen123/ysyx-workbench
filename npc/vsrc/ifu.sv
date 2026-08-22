@@ -1,10 +1,10 @@
-`include "const.vh"
+`include "npc_const.sv"
 
 import "DPI-C" function int pmem_read(int pc);
 
-module ifu(
-    input  [`DATA_WIDTH-1:0] pc,
-    output reg [`DATA_WIDTH-1:0] inst
+module ifu import npc_const::*; (
+    input  [DATA_WIDTH-1:0] pc,
+    output reg [DATA_WIDTH-1:0] inst
 );
     
     always_comb begin
