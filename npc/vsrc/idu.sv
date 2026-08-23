@@ -29,9 +29,9 @@ module idu import npc_const::*;(
     wire [DATA_WIDTH-1:0] imms      = {{21{inst[31]}}, inst[30:25], inst[11:7]};
     wire [DATA_WIDTH-1:0] immu      = {inst[31:12], 12'b0};
 
-    logic [REG_ADDR_WIDTH-1:0] rd0  = inst[7+REG_ADDR_WIDTH-1:7];
-    logic [REG_ADDR_WIDTH-1:0] rs1  = inst[15+REG_ADDR_WIDTH-1:15];
-    logic [REG_ADDR_WIDTH-1:0] rs2  = inst[20+REG_ADDR_WIDTH-1:20];
+    wire [REG_ADDR_WIDTH-1:0] rd0  = inst[7+REG_ADDR_WIDTH-1:7];
+    wire [REG_ADDR_WIDTH-1:0] rs1  = inst[15+REG_ADDR_WIDTH-1:15];
+    wire [REG_ADDR_WIDTH-1:0] rs2  = inst[20+REG_ADDR_WIDTH-1:20];
 
 
     always_comb begin
@@ -56,6 +56,15 @@ module idu import npc_const::*;(
                 imm         = immu;
                 reg_input   = REG_ALU;
                 alu_input1  = ALU_1_NULL;
+                alu_input2  = ALU_2_USE_IMM;
+                en_reg      = 1;
+            end
+
+            OPCODE_AUIPC: begin
+                rd          = rd0;
+                imm         = immu;
+                reg_input   = REG_ALU;
+                alu_input1  = ALU_1_USE_PC;
                 alu_input2  = ALU_2_USE_IMM;
                 en_reg      = 1;
             end

@@ -76,6 +76,7 @@ module top import npc_const::*;(
             .rs1        	(rs1         ),
             .rs2        	(rs2         ),
             .imm        	(imm         ),
+            .pc             (pc          ),
             .alu_input1 	(alu_input1  ),
             .alu_input2 	(alu_input2  ),
             .alu_out    	(alu_out     )
@@ -108,7 +109,7 @@ module top import npc_const::*;(
         if(is_ebreak) begin
             ebreak();
         end
-        pc <= en_pc ? alu_out : pc+4;
+        pc <= en_pc ? alu_out & ~1 : pc+4;
         // itrace 已在 C++ 侧实现 (csrc/cpu/cpu-exec.c), 此处不再 $display
     end
 
