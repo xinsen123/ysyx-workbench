@@ -17,6 +17,7 @@ typedef enum logic [6:0] {
 
 typedef enum logic [1:0] {
     ALU_1_USE_RS1,
+    ALU_1_USE_PC,
     ALU_1_NULL
 } alu_in_1;
 
