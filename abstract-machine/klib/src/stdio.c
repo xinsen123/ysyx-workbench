@@ -5,7 +5,9 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-static void itoa(int num, char *dst, int *count) {
+static void itoa(int num, char *dst, int *count, size_t max_n) {
+    if(*count >= max_n) return;
+    
     // 处理 0 的特殊情况
     if (num == 0) {
         dst[(*count)++] = '0';
@@ -23,7 +25,7 @@ static void itoa(int num, char *dst, int *count) {
 
     // 递归处理高位
     if (unum / 10 != 0) {
-        itoa(unum / 10, dst, count); // 注意：这里传入的是 unsigned int
+        itoa(unum / 10, dst, count, max_n - 1); // 注意：这里传入的是 unsigned int
     }
 
     // 添加当前位
@@ -36,7 +38,7 @@ int printf(const char *fmt, ...) {
     va_start(args, fmt);
 
     int count = vsnprintf(buf, sizeof(buf), fmt, args);
-    for (int i = 0; i <= count; i++) {
+    for (int i = 0; i < count; i++) {
         putch(buf[i]);
     }
     return count;
@@ -65,20 +67,25 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
     char *str;
     const char *buf = fmt;
     
-    size_t max_n = n - 1;
+    size_t max_n = n == 0 ? 0 : n - 1;
 
     while (*buf != '\0' && count < max_n) {
         if (*buf == '%') {
             switch (*(buf + 1)) {
+            case 'c': {
+                char ch = (char)va_arg(ap, int);
+                out[count++] = ch;
+                break;
+            }
             case 'd': {
                 int num = va_arg(ap, int);
-                itoa(num, out, &count);
+                itoa(num, out, &count, max_n);
                 break;
             }
             case 's': {
                 str = va_arg(ap, char *);
                 if (str) {
-                    while (*str != '\0') {
+                    while (*str != '\0' && count < max_n) {
                         out[count++] = *str++;
                     }
                 }
@@ -89,10 +96,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
                 break;
             }
             default:
-                // 未知格式，原样输出
-                out[count++] = '%';
-                out[count++] = *buf;
-                break;
+                panic("Unknown %%type to printf\n");
             }
             buf++; // 跳过 '%'
         } else {
