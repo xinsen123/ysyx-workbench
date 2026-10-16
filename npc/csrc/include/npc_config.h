@@ -36,9 +36,9 @@
 
 /* mtrace: 访存 trace */
 
-// #define CONFIG_MTRACE 1
-// #define CONFIG_MTRACE_COND 1
-// #define MTRACE_COND 1
+#define CONFIG_MTRACE 1
+#define CONFIG_MTRACE_COND 1
+#define MTRACE_COND 1
 
 
 /* ftrace: 函数调用 trace */
@@ -53,8 +53,12 @@
 
 
 
-/* difftest */
-// #define CONFIG_DIFFTEST 1
+/* difftest
+ * 与 RTL 的 REG_ADDR_WIDTH=4 (RV32E, 16 个寄存器) 配套:
+ * 参考设计 NEMU 也必须打开 CONFIG_RVE, 否则两边 sizeof(CPU_state) 不一致,
+ * difftest_regcpy 会按不同大小 memcpy 踩内存。
+ * 见 csrc/cpu/difftest/dut.c 的静态断言。 */
+#define CONFIG_DIFFTEST 1
 
 /* 供 utils.h 的 log_write 使用 */
 

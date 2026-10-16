@@ -51,9 +51,19 @@ __EXPORT void difftest_raise_intr(word_t NO) {
     assert(0);
 }
 
+#ifdef CONFIG_ITRACE
+void init_disasm();
+#endif
+
 __EXPORT void difftest_init(int port) {
     void init_mem();
     init_mem();
     /* Perform ISA dependent initialization. */
     init_isa();
+    /* 参考设计是以动态库 (dlopen) 方式加载的, 不会走 init_monitor, 因此
+       itrace 用到的 capstone 句柄必须在这里自己初始化; 否则 exec_once 里
+       CONFIG_ITRACE 的 disassemble() 会调用空函数指针而段错误。 */
+#ifdef CONFIG_ITRACE
+    init_disasm();
+#endif
 }

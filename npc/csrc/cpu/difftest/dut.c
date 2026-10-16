@@ -14,6 +14,16 @@ void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc);
 
+/* difftest ABI 检查:
+ * NPC 与参考设计(NEMU) 都是直接把各自的 CPU_state 结构体按 sizeof() 做
+ * memcpy (见 NEMU 的 src/cpu/difftest/ref.c: difftest_regcpy), 没有任何版本
+ * 或长度协商, 所以两边的结构体必须字节级一致。
+ * NEMU 侧的结构体大小由 CONFIG_RVE 决定 (16 或 32 个 GPR), NPC 侧由
+ * REG_ADDR_WIDTH=4 决定, 二者是同一个开关的两侧, 必须一起改。 */
+static_assert(sizeof(CPU_state) == DIFFTEST_REG_SIZE,
+              "difftest: NPC 的 CPU_state 大小与 RISCV_GPR_NUM 不一致; "
+              "跑 RV32E 时请确认 NEMU 打开了 CONFIG_RVE");
+
 #ifdef CONFIG_DIFFTEST
 
 static bool is_skip_ref = false;
@@ -90,6 +100,11 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 
 void difftest_step(vaddr_t pc, vaddr_t npc) {
     CPU_state ref_r;
+
+    /* 已经停机/中止(ebreak 停机 或 非法指令) 的那一条指令不再和参考设计比对:
+       此时 NPC 的状态转换由 DPI-C 回调直接完成, 参考设计没必要跟着跑,
+       否则非法指令会先打印自己的报错、再叠一层 difftest 报告。 */
+    if (npc_state.state != NPC_RUNNING) return;
 
     if (skip_dut_nr_inst > 0) {
         ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);

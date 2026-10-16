@@ -103,6 +103,8 @@ static Token tokens[1024]
 static int nr_token __attribute__((used)) = 0;
 
 /*those are indivial values*/
+
+//会出现在表达式左侧的运算符类型
 static int oppo_f_type[] = {'+', '-', '*', '/', '(',
                             TK_ST, TK_BT, TK_EQ, TK_NE, TK_AND};
 
@@ -112,7 +114,8 @@ static int op_3th[] = {TK_ST, TK_BT};
 static int op_4th[] = {TK_EQ, TK_NE};
 static int op_5th[] = {TK_AND};
 
-static int ambi_type[] = {'-', '*'}; // change calc
+//容易引起歧义，可同时被当成多种运算符
+static int ambi_type[] = {'-', '*'}; 
 
 bool is_type(int type, int *type_list, uint32_t size) {
     for (int i = 0; i < size; i++) {
@@ -240,6 +243,8 @@ static int eval_op_eval(uint32_t p, uint32_t q) {
         op = main_sign(p, q, op_2th, ARRLEN(op_2th));
     if (op == 0)
         op = main_sign(p, q, op_1th, ARRLEN(op_1th));
+//这里维护多个表跑多个循环有点搞，应该有按权重跑一遍然后比较的解法。
+
 
     Assert(op != 0, "Invalid expr");
 

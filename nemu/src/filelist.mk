@@ -19,7 +19,11 @@ DIRS-$(CONFIG_MODE_SYSTEM) += src/memory
 DIRS-BLACKLIST-$(CONFIG_TARGET_AM) += src/monitor/sdb
 
 SHARE = $(if $(CONFIG_TARGET_SHARE),1,0)
-LIBS += $(if $(CONFIG_TARGET_NATIVE_ELF),-lreadline -ldl -pie,)
+# -pie 和 -shared 是互斥的输出类型, 而 LIBS 排在 -shared 之后, 所以带 -pie 时
+# 生成的是 PIE 可执行文件而不是动态库, dlopen 会报
+#   "cannot dynamically load position-independent executable"
+# 编译 difftest 参考设计时 (tools/difftest.mk 传 SHARE=1) 必须去掉 -pie。
+LIBS += $(if $(CONFIG_TARGET_NATIVE_ELF),-lreadline -ldl $(if $(filter 1,$(SHARE)),,-pie),)
 
 ifdef mainargs
 ASFLAGS += -DBIN_PATH=\"$(mainargs)\"
