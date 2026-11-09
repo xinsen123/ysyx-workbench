@@ -36,10 +36,12 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
     host_write(guest_to_host(addr), len, data);
 }
 
+#ifndef CONFIG_DEVICE
 static void out_of_bound(paddr_t addr) {
     panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
           addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
 }
+#endif
 
 void init_mem() {
 #if defined(CONFIG_PMEM_MALLOC)
@@ -49,6 +51,19 @@ void init_mem() {
     IFDEF(CONFIG_MEM_RANDOM, memset(pmem, rand(), CONFIG_MSIZE));
     Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
+
+#ifdef CONFIG_MTRACE_COND
+/*CONFIG_MTRACE和CONFIG_ITRACE相仿
+    CONFIG_MTRACE_COND是bool类型宏，在编译时确定，决定是否编译宏
+    MTRACE_COND是一个条件表达式，在运行时确定，决定是否执行宏中的代码
+*/
+static void mtrace(paddr_t addr, int len, bool is_write, word_t data) {
+    if (MTRACE_COND) {
+        log_write("[mtrace] addr = 0x%08x, len = %1d, data = 0x%08x (%s)\n",
+            addr, len, data, is_write ? "write" : "read");
+    }
+}
+#endif
 
 word_t paddr_read(paddr_t addr, int len) {
     word_t ret = 0;
@@ -63,29 +78,21 @@ word_t paddr_read(paddr_t addr, int len) {
     }
 
 #ifdef CONFIG_MTRACE_COND
-/*CONFIG_MTRACE和CONFIG_ITRACE相仿
-    CONFIG_MTRACE_COND是bool类型宏，在编译时确定，决定是否编译宏
-    MTRACE_COND是一个条件表达式，在运行时确定，决定是否执行宏中的代码
-*/
-    if (MTRACE_COND) {
-        log_write("paddr_read: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, ret);
-    }
+    mtrace(addr, len, false, ret);
 #endif
 
     return ret;
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
-#ifdef CONFIG_MTRACE_COND
-    if (MTRACE_COND) {
-        log_write("paddr_writ: addr = 0x%08x, len = %1d, data = %08x\n", addr, len, data);
-    }
-#endif
-    
     if (likely(in_pmem(addr))) {
         pmem_write(addr, len, data);
-        return;
+    } else {
+        IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data));
+        IFNDEF(CONFIG_DEVICE, out_of_bound(addr));
     }
-    IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return );
-    out_of_bound(addr);
+
+#ifdef CONFIG_MTRACE_COND
+    mtrace(addr, len, true, data);
+#endif
 }

@@ -69,123 +69,119 @@ static long load_img() {
 
 #ifdef CONFIG_FTRACE
 #include <elf.h>
+#include <monitor/ftrace.h>
+
 static char *elf_file = NULL;
 
-  /* 函数符号表：从 ELF 中提取的所有函数名及其地址范围 */
-  typedef struct {
-    char name[32];
-    uint32_t begin, end;  // [begin, end) 左闭右开区间
-  } elf_obj;
+fun_sym_t *fun_table = NULL;
+int fun_cnt = 0;
 
-  elf_obj fun_table[128];  // 最多存 128 个函数
-  int fun_cnt = 0;         // 实际加载的函数数
+static int sym_cmp(const void *a, const void *b) {
+  const fun_sym_t *x = (const fun_sym_t *)a;
+  const fun_sym_t *y = (const fun_sym_t *)b;
+  return (x->begin > y->begin) - (x->begin < y->begin);
+}
 
-  /* 从 ELF 的 .symtab 节中提取所有函数符号 */
-  static void load_elf() {
-    if (elf_file == NULL) {
-      Log("No ELF file provided, FTRACE disabled.");
-      return;
-    }
-
-    FILE *fp = fopen(elf_file, "rb");
-    if (fp == NULL) {
-      Log("Cannot open ELF file '%s'.", elf_file);
-      return;
-    }
-
-    /* ---- 1. 读 ELF 文件头，验证魔数和格式 ---- */
-    Elf32_Ehdr ehdr;
-    if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
-      Log("Failed to read ELF header.");
-      fclose(fp);
-      return;
-    }
-    if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
-      Log("'%s' is not a valid ELF file.", elf_file);
-      fclose(fp);
-      return;
-    }
-    if (ehdr.e_ident[EI_CLASS] != ELFCLASS32) {
-      Log("Only 32-bit ELF is supported.");
-      fclose(fp);
-      return;
-    }
-
-    /* ---- 2. 读取所有节头表 (section headers) ---- */
-    fseek(fp, ehdr.e_shoff, SEEK_SET);
-    Elf32_Shdr *shdr = malloc(ehdr.e_shentsize * ehdr.e_shnum);
-    if (shdr == NULL) { fclose(fp); return; }
-    if (fread(shdr, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum) {
-      Log("Failed to read section headers.");
-      free(shdr); fclose(fp); return;
-    }
-
-    /* 顺便读一下节头字符串表（shstrtab），本函数未用到，为后续扩展保留 */
-    char *shstrtab = NULL;
-    if (ehdr.e_shstrndx != SHN_UNDEF) {
-      shstrtab = malloc(shdr[ehdr.e_shstrndx].sh_size);
-      if (shstrtab) {
-        fseek(fp, shdr[ehdr.e_shstrndx].sh_offset, SEEK_SET);
-        if (fread(shstrtab, shdr[ehdr.e_shstrndx].sh_size, 1, fp) != 1) {
-          Log("Failed to read section header string table.");
-          free(shstrtab); free(shdr); fclose(fp); return;
-        }
-      }
-    }
-
-    /* ---- 3. 找到 .symtab 节及其关联的 .strtab 节 ---- */
-    Elf32_Shdr *symtab_hdr = NULL;
-    Elf32_Shdr *strtab_hdr = NULL;
-    for (int i = 0; i < ehdr.e_shnum; i++) {
-      if (shdr[i].sh_type == SHT_SYMTAB) {
-        symtab_hdr = &shdr[i];
-        strtab_hdr = &shdr[symtab_hdr->sh_link];  // sh_link 指向对应的字符串表
-        break;
-      }
-    }
-    if (symtab_hdr == NULL) {
-      Log("No symbol table found in '%s'.", elf_file);
-      free(shstrtab); free(shdr); fclose(fp); return;
-    }
-
-    /* ---- 4. 读字符串表（存着所有符号名） ---- */
-    size_t strtab_sz = strtab_hdr->sh_size;
-    char *strtab = malloc(strtab_sz);
-    if (strtab == NULL) { free(shstrtab); free(shdr); fclose(fp); return; }
-    fseek(fp, strtab_hdr->sh_offset, SEEK_SET);
-    if (fread(strtab, strtab_sz, 1, fp) != 1) {
-      Log("Failed to read string table.");
-      free(strtab); free(shstrtab); free(shdr); fclose(fp); return;
-    }
-
-    /* ---- 5. 遍历符号表，筛选出函数符号 ---- */
-    int num_syms = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
-    fseek(fp, symtab_hdr->sh_offset, SEEK_SET);
-    fun_cnt = 0;
-
-    for (int i = 0; i < num_syms && fun_cnt < 128; i++) {
-      Elf32_Sym sym;
-      if (fread(&sym, sizeof(sym), 1, fp) != 1) break;
-
-      /* 只取 STT_FUNC 类型、有实际体（st_size > 0）且有地址（st_value > 0）的符号 */
-      if ((ELF32_ST_TYPE(sym.st_info) == STT_FUNC || 
-           ELF32_ST_TYPE(sym.st_info) == STT_NOTYPE)&&
-          sym.st_size > 0 && sym.st_value > 0) {
-        fun_table[fun_cnt].begin = sym.st_value;
-        fun_table[fun_cnt].end = sym.st_value + sym.st_size;
-        const char *sym_name = strtab + sym.st_name;  // st_name 是 .strtab 中的偏移
-        snprintf(fun_table[fun_cnt].name, sizeof(fun_table[fun_cnt].name), "%s", sym_name);
-        fun_cnt++;
-      }
-    }
-
-    Log("Loaded %d functions from ELF symbol table.", fun_cnt);
-
-    free(strtab);
-    free(shstrtab);
-    free(shdr);
-    fclose(fp);
+/* 函数表已按 begin 升序排好, 二分找到最后一个 begin <= addr 的表项再校验区间 */
+const fun_sym_t *ftrace_find(vaddr_t addr) {
+  int l = 0, r = fun_cnt - 1, ans = -1;
+  while (l <= r) {
+    int mid = (l + r) / 2;
+    if (fun_table[mid].begin <= addr) { ans = mid; l = mid + 1; }
+    else r = mid - 1;
   }
+  if (ans >= 0 && addr < fun_table[ans].end) return &fun_table[ans];
+  return NULL;
+}
+
+/* 从 ELF 的 .symtab 节中提取所有函数符号 */
+static void load_elf() {
+  if (elf_file == NULL) {
+    Log("No ELF file provided, FTRACE disabled.");
+    return;
+  }
+
+  FILE *fp = fopen(elf_file, "rb");
+  if (fp == NULL) {
+    Log("Cannot open ELF file '%s'.", elf_file);
+    return;
+  }
+
+  /* ---- 1. 读 ELF 文件头，验证魔数和格式 ---- */
+  Elf32_Ehdr ehdr;
+  if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
+    Log("Failed to read ELF header.");
+    fclose(fp);
+    return;
+  }
+  if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
+    Log("'%s' is not a valid ELF file.", elf_file);
+    fclose(fp);
+    return;
+  }
+  if (ehdr.e_ident[EI_CLASS] != ELFCLASS32) {
+    Log("Only 32-bit ELF is supported.");
+    fclose(fp);
+    return;
+  }
+
+  /* ---- 2. 读取所有节头表 (section headers) ---- */
+  fseek(fp, ehdr.e_shoff, SEEK_SET);
+  Elf32_Shdr *shdr = malloc(ehdr.e_shentsize * ehdr.e_shnum);
+  if (shdr == NULL) { fclose(fp); return; }
+  if (fread(shdr, ehdr.e_shentsize, ehdr.e_shnum, fp) != ehdr.e_shnum) {
+    Log("Failed to read section headers.");
+    free(shdr); fclose(fp); return;
+  }
+
+  /* ---- 3. 找到 .symtab 节及其关联的 .strtab 节 ---- */
+  Elf32_Shdr *symtab_hdr = NULL, *strtab_hdr = NULL;
+  for (int i = 0; i < ehdr.e_shnum; i++) {
+    if (shdr[i].sh_type == SHT_SYMTAB) {
+      symtab_hdr = &shdr[i];
+      strtab_hdr = &shdr[symtab_hdr->sh_link];
+      break;
+    }
+  }
+  if (symtab_hdr == NULL) {
+    Log("No symbol table found in '%s'.", elf_file);
+    free(shdr); fclose(fp); return;
+  }
+
+  /* ---- 4. 读字符串表; 符号名直接指向这块内存, 所以不能 free ---- */
+  char *strtab = malloc(strtab_hdr->sh_size);
+  if (strtab == NULL) { free(shdr); fclose(fp); return; }
+  fseek(fp, strtab_hdr->sh_offset, SEEK_SET);
+  if (fread(strtab, strtab_hdr->sh_size, 1, fp) != 1) {
+    Log("Failed to read string table.");
+    free(strtab); free(shdr); fclose(fp); return;
+  }
+
+  /* ---- 5. 遍历符号表，只保留有函数体的 FUNC 符号 ---- */
+  int num_syms = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
+  fun_table = malloc(sizeof(fun_sym_t) * num_syms);
+  assert(fun_table);
+
+  fun_cnt = 0;
+  fseek(fp, symtab_hdr->sh_offset, SEEK_SET);
+  for (int i = 0; i < num_syms; i++) {
+    Elf32_Sym sym;
+    if (fread(&sym, sizeof(sym), 1, fp) != 1) break;
+    if (ELF32_ST_TYPE(sym.st_info) != STT_FUNC) continue;
+    if (sym.st_size == 0 || sym.st_value == 0) continue;
+
+    fun_table[fun_cnt].begin = sym.st_value;
+    fun_table[fun_cnt].end = sym.st_value + sym.st_size;
+    fun_table[fun_cnt].name = strtab + sym.st_name;
+    fun_cnt++;
+  }
+
+  qsort(fun_table, fun_cnt, sizeof(fun_sym_t), sym_cmp);
+  Log("Loaded %d functions from ELF symbol table.", fun_cnt);
+
+  free(shdr);
+  fclose(fp);
+}
 #endif
 
 static int parse_args(int argc, char *argv[]) {
@@ -207,9 +203,11 @@ static int parse_args(int argc, char *argv[]) {
       case 1: 
       //case1时为常规字符串，按照此逻辑可无限拓展加参
       if(img_file == NULL) {img_file = optarg;}
+      
       #ifdef CONFIG_FTRACE
-        else if (elf_file == NULL) {elf_file = optarg; return 0;} 
+      else if (elf_file == NULL) {elf_file = optarg; return 0;} 
       #endif
+      
       break;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);

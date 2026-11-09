@@ -38,14 +38,92 @@ static int p_ring = 0;
 #endif
 
 #ifdef CONFIG_FTRACE
-static int fun_indent = 0;
+#include <monitor/ftrace.h>
+
+#define FTRACE_MAX_DEPTH 64
+
+/* 影子调用栈: 进入一个函数压一帧, 返回时弹一帧.
+ * ra 是这个函数返回后要回到的地址(即 jal/jalr 写入 rd 的值),
+ * name 是这个函数的名字(打印 ret 行时用). */
 typedef struct {
-    char name[32];
-    uint32_t begin, end;
-} elf_obj;
-/* 引用 monitor.c 中定义的变量 */
-extern elf_obj fun_table[128];
-extern int fun_cnt;
+  vaddr_t ra;
+  const char *name;
+} ftrace_frame;
+
+static ftrace_frame ftrace_stack[FTRACE_MAX_DEPTH];
+static int ftrace_depth = 0;
+
+/* riscv32 中"调用/返回"的判定只看指令本身, 和跳转目标落在哪个函数无关:
+ *   jal  rd, off         (opcode 0x6f)
+ *       rd != 0 -> call
+ *       rd == 0 -> 无条件跳转(可能是尾调用)
+ *   jalr rd, rs1, off    (opcode 0x67, funct3 == 0)
+ *       rd == 0 && rs1 == ra(x1) && off == 0 -> ret (伪指令 ret)
+ *       rd != 0                              -> call (间接调用也走这里)
+ *       rd == 0 其它                         -> 无条件跳转(可能是尾调用)
+ * 跳转目标 dnpc 只用来查函数名, 查不到就打印 "???" 而不是丢弃.
+ */
+static void ftrace(Decode *s, vaddr_t dnpc) {
+  uint32_t inst = s->isa.inst;
+  uint32_t opcode = inst & 0x7f;
+  bool is_jal  = (opcode == 0x6f);
+  bool is_jalr = (opcode == 0x67) && (((inst >> 12) & 0x7) == 0);
+  if (!is_jal && !is_jalr) return;
+
+  uint32_t rd  = (inst >> 7) & 0x1f;
+  uint32_t rs1 = (inst >> 15) & 0x1f;
+  int32_t  imm = (int32_t)inst >> 20;
+
+  bool is_ret = is_jalr && rd == 0 && rs1 == 1 && imm == 0;
+
+  if (is_ret) {
+    if (ftrace_depth == 0) {
+      if (FTRACE_COND) {
+        log_write("[ftrace] " FMT_WORD ": ret  [???] (call stack empty)\n", s->pc);
+      }
+      return;
+    }
+    ftrace_depth--;
+    if (FTRACE_COND) {
+      log_write("[ftrace] " FMT_WORD ": %*sret  [%s] ra=" FMT_WORD "\n",
+          s->pc, ftrace_depth * 2, "",
+          ftrace_stack[ftrace_depth].name, ftrace_stack[ftrace_depth].ra);
+    }
+    return;
+  }
+
+  const fun_sym_t *sym = ftrace_find(dnpc);
+  const char *name = sym ? sym->name : "???";
+
+  if (rd != 0) {  // call
+    if (FTRACE_COND) {
+      log_write("[ftrace] " FMT_WORD ": %*scall [%s@" FMT_WORD "]\n",
+          s->pc, ftrace_depth * 2, "", name, dnpc);
+    }
+    if (ftrace_depth < FTRACE_MAX_DEPTH) {
+      ftrace_stack[ftrace_depth].ra = s->snpc;  // jal/jalr 写入 rd 的返回地址
+      ftrace_stack[ftrace_depth].name = name;
+      ftrace_depth++;
+    }
+    return;
+  }
+
+  /* rd == 0 且不是 ret: 无条件跳转. 只有目标是另一个函数的入口时才算尾调用,
+   * 函数内部的 goto/循环跳转不算. */
+  const fun_sym_t *cur = ftrace_find(s->pc);
+  if (sym == NULL || (cur != NULL && sym->begin == cur->begin)) return;
+
+  if (ftrace_depth > 0) {
+    /* 尾调用不产生新栈帧: 把当前帧换成被调用的函数, ra 保持不变 */
+    ftrace_stack[ftrace_depth - 1].name = name;
+    if (FTRACE_COND) {
+      log_write("[ftrace] " FMT_WORD ": %*stail [%s@" FMT_WORD "]\n",
+          s->pc, (ftrace_depth - 1) * 2, "", name, dnpc);
+    }
+  } else if (FTRACE_COND) {
+    log_write("[ftrace] " FMT_WORD ": tail [%s@" FMT_WORD "]\n", s->pc, name, dnpc);
+  }
+}
 #endif
 
 void device_update();
@@ -54,7 +132,7 @@ void is_wp_update(bool *success);
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
     if (ITRACE_COND) {
-        log_write("%s\n", _this->logbuf);
+        log_write("[itrace] %s\n", _this->logbuf);
         snprintf(iringbuf[(p_ring++) % MAX_INST_TO_PRINT], 128, "%s", _this->logbuf);
     }
 #endif
@@ -72,20 +150,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
 
 #ifdef CONFIG_FTRACE
-    if ((((_this->isa.inst & 0x7f) == 0x6f) && ((_this->isa.inst & 0xf80) != 0x0))|| //jal，rd不为x0时有意义
-    (((_this->isa.inst & 0x7f) == 0x67) && (_this->isa.inst & 0x7000) == 0x0)) {//opcode & fun3 -> jalr
-        for(int i = 0; i < fun_cnt; i++) {
-            /* rd不为x0的jal和任意jalr可识别为函数出入口，然后再对jalr进行进一步判断 */
-            if(dnpc >= fun_table[i].begin && dnpc < fun_table[i].end){
-                bool is_ret = ((_this->isa.inst & 0xf80) == 0x0) &&    // rd == x0
-                              ((_this->isa.inst & 0xf8000) == 0x8000); // rs1 == ra(x1)
-                char *ret_word = is_ret ? "ret" : "call";
-                fun_indent = is_ret ? fun_indent > 0 ? fun_indent - 1 : fun_indent : fun_indent + 1;
-                printf("0x%8x: %*s%s[%s@0x%8x]\n", _this->pc, fun_indent * 2, "", ret_word, fun_table[i].name, dnpc);
-                break;
-            }
-        }
-    }
+    ftrace(_this, dnpc);
 #endif
 }
 
@@ -155,7 +220,8 @@ void assert_fail_msg() {
 
 static void ringbuf_print(){
     for(int i = 0; i < MAX_INST_TO_PRINT && iringbuf[i][0] != '\0'; i++){
-        printf("%s%s\n", ((p_ring - 1) % MAX_INST_TO_PRINT) == i ? "--> " : "    ", iringbuf[i]);
+        log_write("[iringbuf] %s%s\n", ((p_ring - 1) % MAX_INST_TO_PRINT) == i ? "--> " : "    ", iringbuf[i]);
+        printf("[iringbuf] %s%s\n", ((p_ring - 1) % MAX_INST_TO_PRINT) == i ? "--> " : "    ", iringbuf[i]);
     }
 }
 
@@ -170,9 +236,6 @@ void cpu_exec(uint64_t n) {
     case NEMU_QUIT:
         printf("Program execution has ended. To restart the program, exit NEMU "
                "and run again.\n");
-    #ifdef CONFIG_ITRACE
-               ringbuf_print();
-    #endif
                return;
     default:
         nemu_state.state = NEMU_RUNNING;
