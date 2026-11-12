@@ -36,7 +36,8 @@
 #define AUDIO_SBUF_ADDR (MMIO_BASE   + 0x1200000)
 
 extern char _pmem_start;
-#define PMEM_SIZE (128 * 1024 * 1024)
+// 与 nemu/.config 的 CONFIG_MSIZE 保持一致 (256MB), 否则 heap.end 会小于镜像末尾
+#define PMEM_SIZE (256 * 1024 * 1024)
 #define PMEM_END  ((uintptr_t)&_pmem_start + PMEM_SIZE)
 #define NEMU_PADDR_SPACE \
   RANGE(&_pmem_start, PMEM_END), \

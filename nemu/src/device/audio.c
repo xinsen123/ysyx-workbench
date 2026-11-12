@@ -30,7 +30,51 @@ enum {
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
+static uint32_t sbuf_rpos = 0;   // 宿主读指针
+
+static void sdl_audio_callback(void *userdata, uint8_t *stream, int len) {
+  uint32_t count = audio_base[reg_count];
+  uint32_t n = count < (uint32_t)len ? count : (uint32_t)len;
+
+  if (n > 0) {
+    uint32_t remain = CONFIG_SB_SIZE - sbuf_rpos;
+    uint32_t first = n < remain ? n : remain;
+    memcpy(stream, sbuf + sbuf_rpos, first);
+    if (n > first) memcpy(stream + first, sbuf, n - first);   // 回绕
+    sbuf_rpos = (sbuf_rpos + n) % CONFIG_SB_SIZE;
+    audio_base[reg_count] -= n;
+  }
+  if (n < (uint32_t)len) memset(stream + n, 0, len - n);       // 不够补静音
+}
+
+static void init_sdl_audio(void) {
+  SDL_AudioSpec s = {
+    .freq     = audio_base[reg_freq],
+    .format   = AUDIO_S16SYS,
+    .channels = audio_base[reg_channels],
+    .samples  = audio_base[reg_samples],
+    .callback = sdl_audio_callback,
+    .userdata = NULL
+  };
+  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  if (SDL_OpenAudio(&s, NULL) < 0) panic("SDL_OpenAudio: %s", SDL_GetError());
+  SDL_PauseAudio(0);          // 0 = 开始播放
+}
+
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+  switch (offset / 4) {
+    case reg_sbuf_size:                 // 读: 填大小
+      if (!is_write) audio_base[reg_sbuf_size] = CONFIG_SB_SIZE;
+      break;
+    case reg_init:                      // 写 1: 启动 SDL
+      if (is_write && audio_base[reg_init]) init_sdl_audio();
+      break;
+    case reg_count:
+      // 读: count 已经是 audio_base[reg_count], host_read 直接取
+      // 若采用"guest 写 count 通知"的方案, 这里处理 is_write 的累加
+      break;
+    default: break;
+  }
 }
 
 void init_audio() {
